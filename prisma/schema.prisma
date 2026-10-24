@@ -1,0 +1,72 @@
+// Prisma Schema for CVGen SaaS
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  passwordHash  String?
+  image         String?
+  plan          String      @default("free") // "free" | "pro"
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  cvs           CV[]
+  aiUsages      AIUsage[]
+
+  @@map("users")
+}
+
+model CV {
+  id            String      @id @default(cuid())
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String      @default("Untitled CV")
+  templateId    String      @default("classic") // "classic" | "modern" | "technical" | "graduate"
+  colorTheme    String      @default("slate")   // "slate" | "navy" | "emerald" | "indigo" | "burgundy" | "monochrome"
+  fontFamily    String      @default("sans")    // "sans" | "serif" | "khmer"
+  fontSize      String      @default("normal")  // "compact" | "normal" | "relaxed"
+  spacing       String      @default("normal")  // "compact" | "normal" | "spacious"
+  data          Json        // Structured CV data conforming to CVDataSchema
+  isPublished   Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  versions      CVVersion[]
+
+  @@index([userId])
+  @@map("cvs")
+}
+
+model CVVersion {
+  id            String      @id @default(cuid())
+  cvId          String
+  cv            CV          @relation(fields: [cvId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  title         String
+  data          Json
+  createdAt     DateTime    @default(now())
+
+  @@index([cvId])
+  @@map("cv_versions")
+}
+
+model AIUsage {
+  id            String      @id @default(cuid())
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actionType    String      // "improve_bullet" | "generate_summary" | "tailor_cv"
+  promptTokens  Int         @default(0)
+  createdAt     DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ai_usages")
+}
