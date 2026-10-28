@@ -120,6 +120,23 @@ export const CVRenderer: React.FC<CVRendererProps> = ({
     }
   };
 
+  const isFullBleed = [
+    "portal",
+    "diamond",
+    "camtech",
+    "midnight",
+    "axis",
+    "colorblock",
+    "cyberpunk",
+    "ocean",
+    "horizon",
+    "ribbon",
+    "bento",
+    "executive",
+  ].includes(settings.templateId);
+
+  const appliedPadding = isFullBleed ? "p-0" : spacing.pagePadding;
+
   return (
     <div
       className={`transition-transform duration-200 origin-top flex justify-center ${className}`}
@@ -129,7 +146,7 @@ export const CVRenderer: React.FC<CVRendererProps> = ({
     >
       <div
         id="cv-preview-sheet"
-        className={`a4-sheet ${spacing.pagePadding} bg-white shadow-2xl rounded-sm transition-all text-slate-800 ${
+        className={`a4-sheet ${appliedPadding} bg-white shadow-2xl rounded-sm transition-all text-slate-800 ${
           isPrintOnly ? "border-0 shadow-none p-0" : "border border-slate-200"
         }`}
       >

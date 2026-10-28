@@ -91,10 +91,19 @@ body {
     width: 210mm !important;
     min-height: 297mm !important;
     margin: 0 !important;
-    padding: 20mm !important;
+    padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
+  }
+
+  .cv-break-avoid,
+  .portal-project-card,
+  .portal-exp-item,
+  .portal-edu-card,
+  .portal-sidebar-block {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .no-print {

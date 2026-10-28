@@ -89,6 +89,20 @@ export async function downloadDirectPDF(
     const pageHeight = 297; // A4 height in mm
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
+    // Single-page guarantee: if the document is within single-page scope (<= 330mm),
+    // scale cleanly to fit 1 A4 page so it never creates an accidental 2nd page with sliced elements.
+    if (imgHeight <= 330) {
+      const scaleFactor = imgHeight > pageHeight ? pageHeight / imgHeight : 1;
+      const finalWidth = imgWidth * scaleFactor;
+      const xOffset = (imgWidth - finalWidth) / 2;
+      const finalHeight = imgHeight * scaleFactor;
+
+      pdf.addImage(imgData, "JPEG", xOffset, 0, finalWidth, finalHeight, undefined, "FAST");
+      const fileName = getCVFileName(data);
+      pdf.save(fileName);
+      return true;
+    }
+
     let heightLeft = imgHeight;
     let position = 0;
 
