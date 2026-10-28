@@ -23,4 +23,21 @@ describe("PDF Export Pipeline", () => {
 
     printSpy.mockRestore();
   });
+
+  it("calculates smart page break points before intersected card boundaries", async () => {
+    const { calculateSmartBreakPoints } = await import("@/lib/pdf/export-pdf");
+
+    // Case 1: Single page document
+    const singleBreaks = calculateSmartBreakPoints(900, 1123, []);
+    expect(singleBreaks).toEqual([900]);
+
+    // Case 2: Multi-page document where card intersects boundary (e.g. at 1123px)
+    // Project card starts at 1050px and ends at 1200px.
+    const boundaries = [{ top: 1050, bottom: 1200 }];
+    const breaks = calculateSmartBreakPoints(1600, 1123, boundaries, 6);
+
+    // Should break BEFORE the card (at 1050 - 6 = 1044px) instead of slicing at 1123px!
+    expect(breaks[0]).toBe(1044);
+    expect(breaks[1]).toBe(1600);
+  });
 });

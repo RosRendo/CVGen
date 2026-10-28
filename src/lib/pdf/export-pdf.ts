@@ -38,13 +38,63 @@ export function triggerVectorPrint(data: CVData): void {
   }
 }
 
+export interface AvoidBoundary {
+  top: number;
+  bottom: number;
+}
+
 /**
- * Method 2: Direct Client-Side PDF Download
- * Captures the #cv-preview-sheet element and compiles an A4 PDF for direct file download.
+ * Calculates smart page break points that avoid splitting cards, headers, or pill badges in half.
+ */
+export function calculateSmartBreakPoints(
+  totalHeight: number,
+  pageHeight: number,
+  avoidBoundaries: AvoidBoundary[],
+  safetyMargin: number = 6
+): number[] {
+  if (totalHeight <= pageHeight) {
+    return [totalHeight];
+  }
+
+  const breaks: number[] = [];
+  let currentY = 0;
+
+  while (currentY < totalHeight) {
+    const idealBottom = currentY + pageHeight;
+
+    if (idealBottom >= totalHeight) {
+      breaks.push(totalHeight);
+      break;
+    }
+
+    // Check if an avoid-boundary element is intersected by idealBottom
+    let chosenBreak = idealBottom;
+    for (const b of avoidBoundaries) {
+      if (b.top < idealBottom && b.bottom > idealBottom) {
+        const proposedBreak = b.top - safetyMargin;
+        if (proposedBreak > currentY + pageHeight * 0.4) {
+          chosenBreak = proposedBreak;
+          break;
+        }
+      }
+    }
+
+    breaks.push(chosenBreak);
+    currentY = chosenBreak;
+  }
+
+  return breaks;
+}
+
+/**
+ * Method 2: Direct Client-Side PDF Download with Smart Element-Boundary Page Breaks
+ * Captures the #cv-preview-sheet element, detects card boundaries, and compiles
+ * an A4 PDF without slicing text or badges in half.
  */
 export async function downloadDirectPDF(
   elementId: string = "cv-preview-sheet",
-  data: CVData
+  data: CVData,
+  forceSinglePage: boolean = false
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -59,6 +109,14 @@ export async function downloadDirectPDF(
   try {
     element.style.transform = "none";
     if (parent) parent.style.transform = "none";
+
+    // Collect avoid-break boundaries before canvas capture
+    const elRect = element.getBoundingClientRect();
+    const avoidElements = Array.from(
+      element.querySelectorAll<HTMLElement>(
+        ".cv-break-avoid, .portal-project-card, .portal-exp-item, .portal-edu-card, .portal-sidebar-block, section, article"
+      )
+    );
 
     const canvas = await html2canvas(element, {
       scale: 2, // High resolution (retina 192 DPI)
@@ -78,7 +136,6 @@ export async function downloadDirectPDF(
       },
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.98);
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -86,16 +143,18 @@ export async function downloadDirectPDF(
     });
 
     const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
+    const pageHeightMm = 297; // A4 height in mm
+    const pageHeightPx = (canvas.width * 297) / 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Single-page guarantee: if the document is within single-page scope (<= 330mm),
-    // scale cleanly to fit 1 A4 page so it never creates an accidental 2nd page with sliced elements.
-    if (imgHeight <= 330) {
-      const scaleFactor = imgHeight > pageHeight ? pageHeight / imgHeight : 1;
+    // Single-page auto-fit: If user requested single-page OR document is near 1 page (<= 345mm),
+    // proportionally scale to fit exactly 1 A4 page.
+    if (forceSinglePage || imgHeight <= 345) {
+      const scaleFactor = imgHeight > pageHeightMm ? pageHeightMm / imgHeight : 1;
       const finalWidth = imgWidth * scaleFactor;
       const xOffset = (imgWidth - finalWidth) / 2;
       const finalHeight = imgHeight * scaleFactor;
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
 
       pdf.addImage(imgData, "JPEG", xOffset, 0, finalWidth, finalHeight, undefined, "FAST");
       const fileName = getCVFileName(data);
@@ -103,19 +162,53 @@ export async function downloadDirectPDF(
       return true;
     }
 
-    let heightLeft = imgHeight;
-    let position = 0;
+    // Multi-page Smart Element Slicing:
+    // Scale DOM boundary coordinates to canvas pixels
+    const scaleY = canvas.height / (element.clientHeight || canvas.height);
+    const avoidBoundaries: AvoidBoundary[] = avoidElements.map((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        top: (rect.top - elRect.top) * scaleY,
+        bottom: (rect.bottom - elRect.top) * scaleY,
+      };
+    });
 
-    // First page
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-    heightLeft -= pageHeight;
+    const breakPoints = calculateSmartBreakPoints(canvas.height, pageHeightPx, avoidBoundaries);
 
-    // Subsequent pages if CV spans more than 1 page
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-      heightLeft -= pageHeight;
+    let startY = 0;
+    for (let i = 0; i < breakPoints.length; i++) {
+      const endY = breakPoints[i];
+      const sliceHeightPx = endY - startY;
+      const sliceHeightMm = (sliceHeightPx * imgWidth) / canvas.width;
+
+      const sliceCanvas = document.createElement("canvas");
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = sliceHeightPx;
+      const ctx = sliceCanvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+        ctx.drawImage(
+          canvas,
+          0,
+          startY,
+          canvas.width,
+          sliceHeightPx,
+          0,
+          0,
+          canvas.width,
+          sliceHeightPx
+        );
+      }
+
+      const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.98);
+
+      if (i > 0) {
+        pdf.addPage();
+      }
+
+      pdf.addImage(sliceData, "JPEG", 0, 0, imgWidth, sliceHeightMm, undefined, "FAST");
+      startY = endY;
     }
 
     const fileName = getCVFileName(data);
