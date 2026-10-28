@@ -33,12 +33,12 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
   const tools = additional?.technicalTools || [];
 
   return (
-    <div className={`w-full text-zinc-800 bg-white ${font.fontFamilyClass} ${size.body} shadow-xs`}>
-      <div className="grid grid-cols-1 md:grid-cols-12 min-h-[950px]">
-        {/* ================= LEFT COLUMN: Charcoal Arched Portal Sidebar (~40% Width) ================= */}
+    <div className={`w-full h-full text-zinc-800 bg-white ${font.fontFamilyClass} ${size.body}`}>
+      <div className="grid grid-cols-12 w-full min-h-[297mm]">
+        {/* ================= LEFT COLUMN: Charcoal Arched Portal Sidebar (5 of 12 cols = 41.7%) ================= */}
         <aside
           style={{ backgroundColor: darkSidebarBg }}
-          className="md:col-span-5 text-white p-5 space-y-3.5 flex flex-col justify-between"
+          className="col-span-5 text-white p-5 space-y-3.5 flex flex-col justify-between"
         >
           <div className="space-y-3.5">
             {/* Top Name & Job Title */}
@@ -352,8 +352,8 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
           </div>
         </aside>
 
-        {/* ================= RIGHT MAIN COLUMN: Crisp Editorial White (~60% Width) ================= */}
-        <main className="md:col-span-7 p-5 sm:p-6 space-y-3.5">
+        {/* ================= RIGHT MAIN COLUMN: Crisp Editorial White (7 of 12 cols = 58.3%) ================= */}
+        <main className="col-span-7 p-5 sm:p-6 space-y-3.5">
           {/* About Me / Executive Summary */}
           {personalInfo.summary && (
             <section className="cv-break-avoid space-y-1.5" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>

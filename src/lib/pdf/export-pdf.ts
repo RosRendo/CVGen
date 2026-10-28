@@ -129,8 +129,14 @@ export async function downloadDirectPDF(
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
           clonedEl.style.transform = "none";
+          clonedEl.style.boxShadow = "none";
+          clonedEl.style.border = "none";
+          clonedEl.style.borderRadius = "0";
+          clonedEl.style.margin = "0";
           if (clonedEl.parentElement) {
             clonedEl.parentElement.style.transform = "none";
+            clonedEl.parentElement.style.padding = "0";
+            clonedEl.parentElement.style.margin = "0";
           }
         }
       },
@@ -147,17 +153,12 @@ export async function downloadDirectPDF(
     const pageHeightPx = (canvas.width * 297) / 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Single-page guarantee (Default): Match the live single-page preview!
-    // Proportionally scales the document to fit exactly 1 A4 page, preventing
-    // accidental multi-page spills, cut badges, and unwanted blank pages.
+    // Full-Bleed 1-Page Guarantee (Default): Match the live single-page preview!
+    // Fills the entire A4 canvas edge-to-edge (x=0 to 210mm, y=0 to 297mm)
+    // with 0 gaps or white margins on the left or right side.
     if (!forceMultiPage || imgHeight <= pageHeightMm) {
-      const scaleFactor = imgHeight > pageHeightMm ? pageHeightMm / imgHeight : 1;
-      const finalWidth = imgWidth * scaleFactor;
-      const xOffset = (imgWidth - finalWidth) / 2;
-      const finalHeight = imgHeight * scaleFactor;
       const imgData = canvas.toDataURL("image/jpeg", 0.98);
-
-      pdf.addImage(imgData, "JPEG", xOffset, 0, finalWidth, finalHeight, undefined, "FAST");
+      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
       const fileName = getCVFileName(data);
       pdf.save(fileName);
       return true;
