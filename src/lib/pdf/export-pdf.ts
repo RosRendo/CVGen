@@ -51,18 +51,31 @@ export async function downloadDirectPDF(
     throw new Error(`Element with id "${elementId}" not found for PDF export.`);
   }
 
-  // Temporary styling preparation
+  // Find parent zoom wrapper if present
+  const parent = element.parentElement;
   const originalTransform = element.style.transform;
-  element.style.transform = "none";
+  const originalParentTransform = parent ? parent.style.transform : "";
 
   try {
+    element.style.transform = "none";
+    if (parent) parent.style.transform = "none";
+
     const canvas = await html2canvas(element, {
       scale: 2, // High resolution (retina 192 DPI)
       useCORS: true,
+      allowTaint: false,
       logging: false,
       backgroundColor: "#ffffff",
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
+      imageTimeout: 6000,
+      onclone: (clonedDoc) => {
+        const clonedEl = clonedDoc.getElementById(elementId);
+        if (clonedEl) {
+          clonedEl.style.transform = "none";
+          if (clonedEl.parentElement) {
+            clonedEl.parentElement.style.transform = "none";
+          }
+        }
+      },
     });
 
     const imgData = canvas.toDataURL("image/jpeg", 0.98);
@@ -96,5 +109,6 @@ export async function downloadDirectPDF(
     return true;
   } finally {
     element.style.transform = originalTransform;
+    if (parent) parent.style.transform = originalParentTransform;
   }
 }

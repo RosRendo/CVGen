@@ -120,6 +120,7 @@ export const TechIconImage: React.FC<{
     <img
       src={src}
       alt={name}
+      crossOrigin="anonymous"
       className={`${className} object-contain inline-block shrink-0`}
       loading="lazy"
       onError={() => setError(true)}

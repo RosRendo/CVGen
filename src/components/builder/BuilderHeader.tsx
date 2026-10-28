@@ -16,8 +16,10 @@ import {
   Clock,
   ChevronDown,
   LayoutGrid,
+  Upload,
 } from "lucide-react";
 import { TemplateGalleryModal } from "./TemplateGalleryModal";
+import { ImportResumeModal } from "./ImportResumeModal";
 
 interface BuilderHeaderProps {
   data: CVData;
@@ -42,6 +44,7 @@ export const BuilderHeader: React.FC<BuilderHeaderProps> = ({
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showSampleMenu, setShowSampleMenu] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const handleTemplateChange = (templateId: TemplateId) => {
     onChange({
@@ -380,46 +383,57 @@ export const BuilderHeader: React.FC<BuilderHeaderProps> = ({
 
                 <div className="my-1 border-t border-zinc-100" />
                 <div className="px-2 py-1 font-mono text-zinc-400 uppercase text-[10px]">
-                  JSON Backup
+                  Data Import & Export
                 </div>
+                <button
+                  onClick={() => {
+                    setIsImportModalOpen(true);
+                    setShowSampleMenu(false);
+                  }}
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-zinc-100 text-zinc-900 font-semibold flex items-center gap-1.5"
+                >
+                  <Upload className="h-3.5 w-3.5 text-zinc-700" />
+                  <span>Upload Resume (PDF / JSON / Text)</span>
+                </button>
                 <button
                   onClick={handleExportJSON}
                   className="w-full text-left px-2 py-1.5 rounded hover:bg-zinc-100 text-zinc-700"
                 >
                   Export Data (.json)
                 </button>
-                <label className="w-full block text-left px-2 py-1.5 rounded hover:bg-zinc-100 text-zinc-700 cursor-pointer">
-                  Import Data (.json)
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImportJSON}
-                    className="hidden"
-                  />
-                </label>
               </div>
             )}
           </div>
 
-          {/* Primary Action: Print / Vector PDF */}
+          {/* Quick Import Button */}
           <button
-            onClick={() => triggerVectorPrint(data)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 text-xs font-medium shadow-xs active:scale-95 transition-all"
-            title="Generates selectable, high-resolution vector PDF"
+            onClick={() => setIsImportModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-all shadow-2xs"
+            title="Upload PDF, JSON draft, or paste resume text"
           >
-            <Printer className="h-3.5 w-3.5" />
-            <span>Vector PDF</span>
+            <Upload className="h-3.5 w-3.5 text-zinc-600" />
+            <span className="hidden sm:inline">Import CV</span>
           </button>
 
-          {/* Direct Download fallback */}
+          {/* Primary Action: Direct PDF Download */}
           <button
             onClick={handleDirectDownload}
             disabled={isExporting}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-all disabled:opacity-50"
-            title="Download direct file"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 text-xs font-semibold shadow-xs active:scale-95 transition-all disabled:opacity-50"
+            title="Download PDF directly to your device"
           >
             <Download className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">{isExporting ? "..." : "Direct"}</span>
+            <span>{isExporting ? "Compiling..." : "Download PDF"}</span>
+          </button>
+
+          {/* Secondary Action: Print / Vector PDF */}
+          <button
+            onClick={() => triggerVectorPrint(data)}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 bg-white text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-all shadow-2xs"
+            title="Generates selectable, high-resolution vector PDF via browser print"
+          >
+            <Printer className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Print / Vector</span>
           </button>
         </div>
       </div>
@@ -430,6 +444,14 @@ export const BuilderHeader: React.FC<BuilderHeaderProps> = ({
         onClose={() => setIsGalleryOpen(false)}
         data={data}
         onSelectTemplate={handleTemplateChange}
+      />
+
+      {/* Import Resume / PDF Modal */}
+      <ImportResumeModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        currentData={data}
+        onApplyCV={onChange}
       />
     </header>
   );
