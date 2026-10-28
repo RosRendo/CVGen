@@ -16,7 +16,7 @@
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
-    "html2canvas": "^1.4.1",
+    "html2canvas-pro": "^2.5.2",
     "jose": "^6.2.13",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.61.0",
