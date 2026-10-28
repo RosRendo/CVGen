@@ -94,7 +94,7 @@ export function calculateSmartBreakPoints(
 export async function downloadDirectPDF(
   elementId: string = "cv-preview-sheet",
   data: CVData,
-  forceSinglePage: boolean = false
+  forceMultiPage: boolean = false
 ): Promise<boolean> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -147,9 +147,10 @@ export async function downloadDirectPDF(
     const pageHeightPx = (canvas.width * 297) / 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Single-page auto-fit: If user requested single-page OR document is near 1 page (<= 345mm),
-    // proportionally scale to fit exactly 1 A4 page.
-    if (forceSinglePage || imgHeight <= 345) {
+    // Single-page guarantee (Default): Match the live single-page preview!
+    // Proportionally scales the document to fit exactly 1 A4 page, preventing
+    // accidental multi-page spills, cut badges, and unwanted blank pages.
+    if (!forceMultiPage || imgHeight <= pageHeightMm) {
       const scaleFactor = imgHeight > pageHeightMm ? pageHeightMm / imgHeight : 1;
       const finalWidth = imgWidth * scaleFactor;
       const xOffset = (imgWidth - finalWidth) / 2;
