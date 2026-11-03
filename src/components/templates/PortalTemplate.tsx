@@ -34,28 +34,29 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
   return (
     <div className={`w-full h-full text-zinc-800 bg-white ${font.fontFamilyClass} ${size.body}`}>
-      <div className="grid grid-cols-12 w-full min-h-[297mm]">
+      <div className="grid grid-cols-12 w-full min-h-[297mm] h-[297mm]">
         {/* ================= LEFT COLUMN: Charcoal Arched Portal Sidebar (5 of 12 cols = 41.7%) ================= */}
         <aside
           style={{ backgroundColor: darkSidebarBg }}
-          className="col-span-5 text-white p-4 space-y-2.5 flex flex-col justify-between"
+          className="col-span-5 text-white p-4 sm:p-5 flex flex-col justify-between h-full"
         >
-          <div className="space-y-2.5">
+          {/* Top Block: Identity, Dome Photo & Contact Channels */}
+          <div className="space-y-3">
             {/* Top Name & Job Title */}
             <div className="text-center border-b border-white/15 pb-2">
               <h1 className="text-base sm:text-lg font-black tracking-widest uppercase text-white">
                 {personalInfo.fullName || "ROS RENDO"}
               </h1>
               {personalInfo.jobTitle && (
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-zinc-300 font-semibold">
+                <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-zinc-300 font-semibold">
                   {personalInfo.jobTitle}
                 </p>
               )}
             </div>
 
-            {/* Arched Dome Portrait Portal Frame */}
+            {/* Signature Arched Dome Portrait Portal Frame */}
             <div className="flex justify-center">
-              <div className="w-24 h-28 rounded-t-full border-2 border-white/90 overflow-hidden bg-zinc-800 shadow-sm relative flex items-center justify-center">
+              <div className="w-24 h-30 rounded-t-full border-2 border-white/90 overflow-hidden bg-zinc-800 shadow-md relative flex items-center justify-center">
                 {personalInfo.photoUrl ? (
                   <img
                     src={personalInfo.photoUrl}
@@ -72,8 +73,8 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
             </div>
 
             {/* Contact Channels */}
-            <div className="space-y-1.5 pt-0.5">
-              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-0.5">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-1">
                 <span className="w-3.5 h-3.5 rounded-full bg-white text-zinc-950 flex items-center justify-center text-[8px] shrink-0 font-black">
                   <User className="h-2 w-2" />
                 </span>
@@ -82,19 +83,19 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
               <div className="space-y-1 text-[10px] text-zinc-300">
                 {personalInfo.phone && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Phone className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                     <span>{personalInfo.phone}</span>
                   </div>
                 )}
                 {personalInfo.email && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <Mail className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                     <span className="truncate">{personalInfo.email}</span>
                   </div>
                 )}
                 {personalInfo.location && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <MapPin className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                     <span>{personalInfo.location}</span>
                   </div>
@@ -104,7 +105,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                     href={personalInfo.githubUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 hover:text-white transition-colors"
+                    className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Github className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                     <span className="truncate">{personalInfo.githubUrl.replace(/^https?:\/\//, "")}</span>
@@ -115,7 +116,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                     href={personalInfo.linkedinUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 hover:text-white transition-colors"
+                    className="flex items-center gap-2 hover:text-white transition-colors"
                   >
                     <Linkedin className="h-2.5 w-2.5 text-zinc-400 shrink-0" />
                     <span className="truncate">{personalInfo.linkedinUrl.replace(/^https?:\/\//, "")}</span>
@@ -123,11 +124,14 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                 )}
               </div>
             </div>
+          </div>
 
+          {/* Middle Block: Technical Skills & Platform Ecosystem */}
+          <div className="space-y-3 py-1">
             {/* Technical Skills with Signature Arched Portal Sliders */}
             {skills?.technical && skills.technical.length > 0 && (
-              <div className="space-y-1.5 pt-0.5">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-0.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
                     <Wrench className="h-2 w-2" />
                   </span>
@@ -136,7 +140,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                 {/* Top Core Competencies with Arched Progress Sliders */}
                 <div className="space-y-1.5 pt-0.5">
-                  {skills.technical.slice(0, 6).map((tech) => {
+                  {skills.technical.slice(0, 5).map((tech) => {
                     const rawRating = skills.ratings?.[tech];
                     const rating = typeof rawRating === "number" ? rawRating : 4;
                     const pct = rating <= 5 ? rating * 20 : Math.min(100, Math.max(20, rating));
@@ -155,7 +159,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                           <span className="text-[9px] font-mono text-zinc-400 font-bold">{pct}%</span>
                         </div>
                         {/* High-Contrast Monochrome Arched Meter Track */}
-                        <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
+                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
                           <div
                             className="h-full bg-gradient-to-r from-zinc-300 to-white rounded-full transition-all"
                             style={{ width: `${pct}%` }}
@@ -167,9 +171,9 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                 </div>
 
                 {/* Additional Technical Skills Tags */}
-                {skills.technical.length > 6 && (
+                {skills.technical.length > 5 && (
                   <div className="flex flex-wrap gap-1 pt-0.5">
-                    {skills.technical.slice(6).map((tech) => (
+                    {skills.technical.slice(5).map((tech) => (
                       <span
                         key={tech}
                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/10 text-zinc-200 text-[9px] font-mono border border-white/10"
@@ -185,8 +189,8 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
             {/* Developer Tools & Platforms */}
             {tools.length > 0 && (
-              <div className="space-y-1 pt-0.5">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-0.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
                     <Code2 className="h-2 w-2" />
                   </span>
@@ -204,21 +208,24 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                 </div>
               </div>
             )}
+          </div>
 
+          {/* Bottom Block: Education, Certifications & Institutional Credentials */}
+          <div className="space-y-2.5">
             {/* Education inside Arched Dome Box */}
             {education && education.length > 0 && (
-              <div className="rounded-t-2xl rounded-b-lg bg-white/5 border border-white/10 p-2.5 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-white border-b border-white/10 pb-1">
-                  <span className="w-4 h-4 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
-                    <GraduationCap className="h-2.5 w-2.5" />
+              <div className="rounded-t-2xl rounded-b-xl bg-white/5 border border-white/10 p-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/10 pb-1">
+                  <span className="w-3.5 h-3.5 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
+                    <GraduationCap className="h-2 w-2" />
                   </span>
                   <span>Education</span>
                 </div>
-                <div className="space-y-2 text-xs text-zinc-300">
+                <div className="space-y-1.5 text-xs text-zinc-300">
                   {education.map((edu) => (
                     <div key={edu.id} className="space-y-0.5">
-                      <span className="font-bold text-white block text-[10.5px]">{edu.institution}</span>
-                      <span className="text-zinc-300 block text-[10px]">
+                      <span className="font-bold text-white block text-[10.5px] leading-tight">{edu.institution}</span>
+                      <span className="text-zinc-300 block text-[9.5px] leading-tight">
                         {edu.degree} in {edu.fieldOfStudy}
                       </span>
                       <span className="text-[9px] font-mono text-zinc-400 block">
@@ -237,20 +244,20 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
               </div>
             )}
 
-            {/* Certifications & Academic Awards */}
+            {/* Certifications & Academic Honors */}
             {((additional?.certifications && additional.certifications.length > 0) ||
               (additional?.awards && additional.awards.length > 0)) && (
-              <div className="space-y-1.5 pt-0.5">
-                <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-1">
-                  <span className="w-4 h-4 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
-                    <Award className="h-2.5 w-2.5" />
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-0.5">
+                  <span className="w-3.5 h-3.5 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
+                    <Award className="h-2 w-2" />
                   </span>
                   <span>Certifications & Honors</span>
                 </div>
-                <div className="space-y-1 text-xs text-zinc-300">
+                <div className="space-y-0.5 text-xs text-zinc-300">
                   {additional?.certifications?.map((cert) => (
                     <div key={cert.id} className="space-y-0.5">
-                      <span className="font-bold text-white block text-[10.5px]">{cert.name}</span>
+                      <span className="font-bold text-white block text-[10px] leading-tight">{cert.name}</span>
                       <span className="text-zinc-400 text-[9px] block">
                         {cert.issuer} {cert.date ? `• ${cert.date}` : ""}
                       </span>
@@ -258,7 +265,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                   ))}
                   {additional?.awards?.map((award) => (
                     <div key={award.id} className="space-y-0.5">
-                      <span className="font-bold text-white block text-[10.5px]">{award.title}</span>
+                      <span className="font-bold text-white block text-[10px] leading-tight">{award.title}</span>
                       <span className="text-zinc-400 text-[9px] block">
                         {award.issuer} {award.date ? `• ${award.date}` : ""}
                       </span>
@@ -268,96 +275,28 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
               </div>
             )}
 
-            {/* Soft Skills / Key Competencies */}
-            {skills?.soft && skills.soft.length > 0 && (
-              <div className="space-y-1.5 pt-0.5">
-                <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-white border-b border-white/15 pb-1">
-                  <span className="w-4 h-4 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
-                    <Sparkles className="h-2.5 w-2.5" />
-                  </span>
-                  <span>Strengths & Competencies</span>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {skills.soft.map((s, idx) => (
-                    <span
-                      key={idx}
-                      className="px-1.5 py-0.5 rounded bg-white/10 text-zinc-200 text-[9.5px] border border-white/10"
-                    >
-                      {s}
+            {/* Languages with 5-Pip Indicators */}
+            {skills?.languages && skills.languages.length > 0 && (
+              <div className="space-y-1 pt-1 border-t border-white/10">
+                <div className="flex items-center justify-between text-[9px] text-zinc-300">
+                  {skills.languages.map((l) => (
+                    <span key={l.id} className="inline-flex items-center gap-1">
+                      <span className="font-bold text-white">{l.language}</span>
+                      <span className="text-zinc-400">({l.proficiency})</span>
                     </span>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Languages with 5-Pip Monochrome Indicators */}
-            {skills?.languages && skills.languages.length > 0 && (
-              <div className="space-y-1.5 pt-0.5 border-t border-white/15">
-                <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-white pb-0.5">
-                  <span className="w-4 h-4 rounded-full bg-white text-zinc-950 flex items-center justify-center shrink-0">
-                    <Globe className="h-2.5 w-2.5" />
-                  </span>
-                  <span>Languages</span>
-                </div>
-                <div className="space-y-1">
-                  {skills.languages.map((l) => {
-                    const isNative = l.proficiency.toLowerCase().includes("native");
-                    const pips = isNative ? 5 : 4;
-
-                    return (
-                      <div
-                        key={l.id}
-                        className="flex items-center justify-between py-0.5 px-2 rounded bg-white/5 border border-white/10"
-                      >
-                        <div>
-                          <span className="text-white font-bold text-[10px] block">{l.language}</span>
-                          <span className="text-[9px] text-zinc-400 block">{l.proficiency}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((step) => (
-                            <span
-                              key={step}
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                step <= pips ? "bg-white shadow-[0_0_2px_#fff]" : "bg-white/20"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* References Card */}
-            {additional?.references && additional.references.length > 0 && (
-              <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 space-y-0.5 text-xs">
-                <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-400 block font-bold">
-                  Institutional References
-                </span>
-                {additional.references.map((ref) => (
-                  <div key={ref.id} className="space-y-0.5">
-                    <div className="text-white font-bold text-[10px]">{ref.name}</div>
-                    <div className="text-zinc-400 text-[9px]">{ref.role} • {ref.institution}</div>
-                    {ref.contact && (
-                      <div className="text-zinc-400 text-[8.5px] font-mono italic">
-                        {ref.contact}
-                      </div>
-                    )}
-                  </div>
-                ))}
               </div>
             )}
           </div>
         </aside>
 
         {/* ================= RIGHT MAIN COLUMN: Crisp Editorial White (7 of 12 cols = 58.3%) ================= */}
-        <main className="col-span-7 p-4 sm:p-5 space-y-2.5">
-          {/* About Me / Executive Summary */}
+        <main className="col-span-7 p-5 sm:p-6 flex flex-col justify-between h-full">
+          {/* Section 1: Professional Summary */}
           {personalInfo.summary && (
             <section className="cv-break-avoid space-y-1" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
-              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-0.5">
+              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-1">
                 <span className="w-4 h-4 rounded-full bg-zinc-950 text-white flex items-center justify-center shrink-0">
                   <User className="h-2.5 w-2.5" />
                 </span>
@@ -371,10 +310,10 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
             </section>
           )}
 
-          {/* Job Experience */}
+          {/* Section 2: Job Experience */}
           {experience && experience.length > 0 && (
             <section className="cv-break-avoid space-y-1.5" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
-              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-0.5">
+              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-1">
                 <span className="w-4 h-4 rounded-full bg-zinc-950 text-white flex items-center justify-center shrink-0">
                   <Briefcase className="h-2.5 w-2.5" />
                 </span>
@@ -383,7 +322,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                 </h2>
               </div>
 
-              <div className="space-y-1.5 pt-0.5">
+              <div className="space-y-1 pt-0.5">
                 {experience.map((exp) => (
                   <div key={exp.id} className="space-y-0.5 cv-break-avoid" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
                     <div className="flex flex-wrap items-baseline justify-between gap-1">
@@ -412,10 +351,10 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
             </section>
           )}
 
-          {/* Featured Engineering Projects */}
+          {/* Section 3: Featured Engineering Projects (4 Flagship Systems) */}
           {projects && projects.length > 0 && (
             <section className="cv-break-avoid space-y-1.5" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
-              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-0.5">
+              <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-1">
                 <span className="w-4 h-4 rounded-full bg-zinc-950 text-white flex items-center justify-center shrink-0">
                   <FolderGit2 className="h-2.5 w-2.5" />
                 </span>
@@ -429,10 +368,10 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                   <div
                     key={proj.id}
                     style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
-                    className="p-2 rounded-lg border border-zinc-200 bg-zinc-50/70 space-y-0.5 cv-break-avoid portal-project-card hover:border-zinc-400 transition-colors"
+                    className="p-2 sm:p-2.5 rounded-lg border border-zinc-200 bg-zinc-50/70 space-y-0.5 cv-break-avoid portal-project-card hover:border-zinc-400 transition-colors"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-1">
-                      <h3 className="font-bold text-zinc-950 text-[11px] tracking-tight">
+                      <h3 className="font-bold text-zinc-950 text-[10.5px] tracking-tight">
                         {proj.name}
                       </h3>
                       <div className="flex items-center gap-2">
@@ -441,7 +380,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                             href={proj.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-[9.5px] font-mono font-semibold text-zinc-900 underline hover:text-black transition-colors"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-mono font-semibold text-zinc-900 underline hover:text-black transition-colors"
                           >
                             Demo <ExternalLink className="w-2 h-2" />
                           </a>
@@ -451,7 +390,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                             href={proj.githubUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-[9.5px] font-mono text-zinc-500 hover:text-zinc-950 transition-colors"
+                            className="inline-flex items-center gap-0.5 text-[9px] font-mono text-zinc-500 hover:text-zinc-950 transition-colors"
                           >
                             GitHub <ExternalLink className="w-2 h-2" />
                           </a>
@@ -459,7 +398,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                       </div>
                     </div>
 
-                    <p className="text-zinc-600 leading-tight text-[10px]">
+                    <p className="text-zinc-600 leading-tight text-[9.5px]">
                       {proj.description}
                     </p>
 
@@ -468,7 +407,7 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                         {proj.technologies.map((tech, idx) => (
                           <span
                             key={idx}
-                            className="px-1.5 py-0.2 rounded text-[9px] font-mono font-semibold bg-white border border-zinc-200 text-zinc-800 shadow-2xs"
+                            className="px-1.5 py-0.2 rounded text-[8.5px] font-mono font-semibold bg-white border border-zinc-200 text-zinc-800 shadow-2xs"
                           >
                             {tech}
                           </span>
@@ -481,45 +420,61 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
             </section>
           )}
 
-          {/* Core Architectural Competencies */}
+          {/* Section 4: Strengths & Core Competencies (Anchored Cleanly at the Bottom) */}
           <section className="cv-break-avoid space-y-1 pt-0.5" style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
             <div className="flex items-center gap-1.5 border-b border-zinc-200 pb-0.5">
               <span className="w-4 h-4 rounded-full bg-zinc-950 text-white flex items-center justify-center shrink-0">
-                <Layers className="h-2.5 w-2.5" />
+                <Award className="h-2.5 w-2.5" />
               </span>
-              <h2 className="text-[11px] font-black uppercase tracking-widest text-zinc-900">
-                Core Architectural Competencies
+              <h2 className="text-[10.5px] font-black uppercase tracking-widest text-zinc-900">
+                Strengths & Core Competencies
               </h2>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-              <div className="p-1.5 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-0.5">
-                <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
-                  Relational Data Modeling
-                </h3>
-                <p className="text-[8.5px] text-zinc-600 leading-tight">
-                  PostgreSQL, Prisma ORM, foreign keys, 35+ tables, transaction integrity.
-                </p>
+            {skills?.soft && skills.soft.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
+                {skills.soft.map((strength, idx) => (
+                  <div
+                    key={idx}
+                    className="p-1.5 sm:p-2 rounded-lg border border-zinc-200 bg-zinc-50/70 flex items-center gap-1.5 hover:border-zinc-400 transition-colors"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 shrink-0" />
+                    <span className="text-[9.5px] font-bold text-zinc-900 tracking-tight leading-tight">
+                      {strength}
+                    </span>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                <div className="p-1.5 sm:p-2 rounded-lg border border-zinc-200 bg-zinc-50/70 space-y-0.5">
+                  <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
+                    Relational Data Modeling
+                  </h3>
+                  <p className="text-[8.5px] text-zinc-600 leading-tight">
+                    PostgreSQL, Prisma ORM, foreign keys, 35+ tables, transaction integrity.
+                  </p>
+                </div>
 
-              <div className="p-1.5 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-0.5">
-                <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
-                  Backend & API Engineering
-                </h3>
-                <p className="text-[8.5px] text-zinc-600 leading-tight">
-                  REST APIs, NestJS, Node.js, JWT authentication, RBAC, input validation.
-                </p>
-              </div>
+                <div className="p-1.5 sm:p-2 rounded-lg border border-zinc-200 bg-zinc-50/70 space-y-0.5">
+                  <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
+                    Backend & API Engineering
+                  </h3>
+                  <p className="text-[8.5px] text-zinc-600 leading-tight">
+                    REST APIs, NestJS, Node.js, JWT authentication, RBAC, input validation.
+                  </p>
+                </div>
 
-              <div className="p-1.5 rounded-md border border-zinc-200 bg-zinc-50/70 space-y-0.5">
-                <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
-                  Cloud & Infrastructure
-                </h3>
-                <p className="text-[8.5px] text-zinc-600 leading-tight">
-                  Docker, Linux Ubuntu, Nginx reverse proxy, PM2, AWS EC2, deployments.
-                </p>
+                <div className="p-1.5 sm:p-2 rounded-lg border border-zinc-200 bg-zinc-50/70 space-y-0.5">
+                  <h3 className="text-[9.5px] font-black uppercase text-zinc-950 tracking-wide">
+                    Cloud & Infrastructure
+                  </h3>
+                  <p className="text-[8.5px] text-zinc-600 leading-tight">
+                    Docker, Linux Ubuntu, Nginx reverse proxy, PM2, AWS EC2, deployments.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </section>
         </main>
       </div>

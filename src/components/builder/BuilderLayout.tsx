@@ -25,6 +25,8 @@ import {
   ChevronRight,
   Eye,
   Edit3,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 const STORAGE_KEY = "cvgen_active_draft_v1";
@@ -102,6 +104,7 @@ export const BuilderLayout: React.FC = () => {
   const [activeMobileTab, setActiveMobileTab] = useState<"edit" | "preview">("edit");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
   const [zoom, setZoom] = useState(0.85);
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
   const [isTailorOpen, setIsTailorOpen] = useState(false);
 
   // Detect ?template=... or ?preset=... query parameters from URL & ensure migration
@@ -216,9 +219,13 @@ export const BuilderLayout: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel: Form Sections */}
         <div
-          className={`w-full lg:w-[48%] xl:w-[45%] flex flex-col bg-white border-r border-slate-200 overflow-y-auto ${
-            activeMobileTab === "preview" ? "hidden lg:flex" : "flex"
-          }`}
+          className={`${
+            isFullscreenPreview
+              ? "hidden"
+              : activeMobileTab === "preview"
+              ? "hidden lg:flex"
+              : "flex"
+          } w-full lg:w-[48%] xl:w-[45%] flex-col bg-white border-r border-slate-200 overflow-y-auto`}
           style={{ maxHeight: "calc(100vh - 58px)" }}
         >
           {/* Section Navigation Tabs */}
@@ -289,7 +296,7 @@ export const BuilderLayout: React.FC = () => {
         {/* Right Panel: Live A4 Preview */}
         <div
           className={`flex-1 flex-col bg-zinc-100/80 overflow-y-auto relative ${
-            activeMobileTab === "edit" ? "hidden lg:flex" : "flex"
+            !isFullscreenPreview && activeMobileTab === "edit" ? "hidden lg:flex" : "flex"
           }`}
           style={{ maxHeight: "calc(100vh - 58px)" }}
         >
@@ -318,6 +325,32 @@ export const BuilderLayout: React.FC = () => {
               className="px-1.5 py-0.5 text-[10px] text-zinc-500 hover:text-zinc-950 font-mono"
             >
               Reset
+            </button>
+            <div className="h-3 w-px bg-zinc-200 mx-1" />
+            <button
+              onClick={() => {
+                if (!isFullscreenPreview) {
+                  setIsFullscreenPreview(true);
+                  setZoom(1.0);
+                } else {
+                  setIsFullscreenPreview(false);
+                  setZoom(0.85);
+                }
+              }}
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-semibold text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 transition-colors"
+              title={isFullscreenPreview ? "Exit Fullscreen (Show Editor)" : "Expand Preview Fullscreen"}
+            >
+              {isFullscreenPreview ? (
+                <>
+                  <Minimize2 className="h-3.5 w-3.5 text-zinc-600" />
+                  <span>Exit Fullscreen</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="h-3.5 w-3.5 text-zinc-600" />
+                  <span>Fullscreen</span>
+                </>
+              )}
             </button>
           </div>
 

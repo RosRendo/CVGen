@@ -183,6 +183,7 @@ describe("CV Templates & Khmer Unicode Rendering", () => {
     expect(screen.getByText(/Sokha Chan \(សូខា ចាន់\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Job Experience/i)).toBeInTheDocument();
     expect(screen.getByText(/Skills & Capabilities/i)).toBeInTheDocument();
+    expect(screen.getByText(/Strengths & Core Competencies/i)).toBeInTheDocument();
   });
 
   it("renders MidnightTemplate with midnight arch and gold gradient banners", () => {
