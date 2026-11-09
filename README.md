@@ -1,68 +1,168 @@
-# CVGen — Modern Professional CV & Resume Builder
+# 📄 CVGen — Reactive Career Document Engine & Multi-Page PDF Compiler
 
-A high-performance SaaS web application built with **Next.js 16 (App Router & Turbopack)**, **TypeScript**, **Tailwind CSS**, and **Prisma ORM** for crafting modern, Apple-grade, and ATS-optimized CVs.
+<div align="center">
 
----
+![React](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react)
+![Vite](https://img.shields.io/badge/Vite-6.0-646CFF.svg?logo=vite)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC.svg?logo=tailwind-css)
+![pnpm](https://img.shields.io/badge/maintained%20with-pnpm-f69220.svg?logo=pnpm)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## ✨ Features
+**High-performance, reactive developer resume and CV synthesizer with real-time schema parsing, instant typography adjustments, and multi-page vector PDF generation.**
 
-- **30 Dynamic CV Templates:** Categorized into Classic, Modern, Tech, Creative, Minimal, and Flagship Luxury (including the *Diamond* template).
-- **Hard Skills Icon Dock:** Grouped by Frontend, Backend, Database, and Infrastructure with official authentic brand colors.
-- **Visual Soft Skills Radar Chart:** Mathematical SVG 5-Axis radar pentagram with metric progress gauges.
-- **Developer Tools & Platforms Breakdown:** Categorized by Version Control, API & Database, Containers & Server Ops, Cloud, and UI/UX.
-- **AI-Assisted Writing & Tailoring:** Summary generation, bullet point improvement, and job-tailoring endpoints.
-- **PDF Export & Print Optimization:** Vector-crisp print styles with zero CORS or network latency issues.
-- **Khmer & International Font Support:** Full Unicode rendering for bilingual and native language CV generation.
+[System Architecture](#-system-architecture) • [Resume Schema ERD](#-reactive-resume-schema-erd) • [Compilation Flow](#-reactive-compilation--export-flow) • [Quick Start](#-quick-start)
 
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Database / ORM:** [PostgreSQL](https://www.postgresql.org/) & [Prisma ORM](https://www.prisma.io/)
-- **Icons:** Custom Vector SVGs & [Lucide React](https://lucide.dev/)
-- **Testing:** [Vitest](https://vitest.dev/) & [Testing Library](https://testing-library.com/)
+</div>
 
 ---
 
-## 🚀 Getting Started
+## ⚡ Overview
 
-### 1. Clone & Install Dependencies
-
-```bash
-git clone https://github.com/RosRendo/CVGen.git
-cd CVGen
-npm install
-```
-
-### 2. Set Up Environment Variables
-
-Copy `.env.example` to `.env.local` and configure your database and authentication secrets:
-
-```bash
-cp .env.example .env.local
-```
-
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+**CVGen** is built for engineers and creatives who demand exact typographical control over their professional documentation. Featuring a reactive JSON schema architecture, it automatically balances section breaks, computes multi-page margins, and generates crisp, ATS-friendly vector PDF downloads directly inside the browser.
 
 ---
 
-## 🧪 Testing
+## 🏗️ System Architecture
 
-```bash
-npm test
+```mermaid
+flowchart TD
+    subgraph UIClient["🖥️ Frontend App (React 19 + Vite + Tailwind 4)"]
+        FormPanel["Section Form Editors (Experience / Education / Skills)"]
+        LiveCanvas["Real-Time Multi-Page Layout Canvas (Paged CSS)"]
+        StyleControls["Typography, Margins, Palette & Spacing Controls"]
+        PDFRenderer["High-DPI Vector Print & PDF Exporter"]
+        
+        FormPanel --> LiveCanvas
+        StyleControls --> LiveCanvas
+        LiveCanvas --> PDFRenderer
+    end
+
+    subgraph StateEngine["⚡ Reactive Schema Engine"]
+        ResumeStore["Reactive Resume State Store (Zustand)"]
+        SchemaValidator["JSON Schema Validator & Sanitizer"]
+        LocalStorageSync["Local Storage Auto-Save Engine"]
+        
+        FormPanel <--> ResumeStore
+        ResumeStore <--> SchemaValidator
+        ResumeStore <--> LocalStorageSync
+    end
 ```
+
+---
+
+## 📊 Reactive Resume Schema ERD
+
+```mermaid
+erDiagram
+    RESUME ||--|| BASICS : contains
+    RESUME ||--o{ EXPERIENCE : lists
+    RESUME ||--o{ EDUCATION : lists
+    RESUME ||--o{ SKILLS : groups
+    RESUME ||--o{ PROJECTS : showcases
+    RESUME ||--o{ CUSTOM_SECTIONS : supports
+
+    RESUME {
+        string id PK "cuid"
+        string templateId "MODERN | CLASSIC | MINIMAL"
+        json themeSettings "colors, fonts, margins"
+        datetime updatedAt
+    }
+
+    BASICS {
+        string fullName
+        string headline
+        string email
+        string phone
+        string location
+        string website
+        text summary
+    }
+
+    EXPERIENCE {
+        string id PK
+        string company
+        string role
+        string startDate
+        string endDate
+        boolean isCurrent
+        string location
+        json highlights "string[]"
+    }
+
+    EDUCATION {
+        string id PK
+        string institution
+        string degree
+        string fieldOfStudy
+        string graduationDate
+    }
+
+    SKILLS {
+        string id PK
+        string categoryName
+        json skillList "string[]"
+    }
+
+    PROJECTS {
+        string id PK
+        string title
+        string description
+        string liveUrl
+        string githubUrl
+        json techStack "string[]"
+    }
+
+    CUSTOM_SECTIONS {
+        string id PK
+        string sectionTitle
+        text markdownContent
+    }
+```
+
+---
+
+## 🔄 Reactive Compilation & Export Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as 👩‍💻 Developer
+    participant Form as 📝 Form Inputs
+    participant Store as ⚡ State Store (Zustand)
+    participant Canvas as 🖼️ Live Preview Canvas
+    participant PDF as 🖨️ PDF Exporter
+
+    Dev->>Form: Modifies Work Experience bullet points
+    Form->>Store: Update experience[0].highlights
+    Store->>Store: Validate schema & persist to LocalStorage
+    Store->>Canvas: Trigger instantaneous re-render (<16ms)
+    
+    Canvas->>Canvas: Dynamic page-break calculation (A4 boundary)
+    Dev->>Canvas: Adjusts line-height slider & theme color
+    Canvas->>Dev: Instant visual preview update
+    
+    Dev->>PDF: Click Download High-DPI Vector PDF
+    PDF->>PDF: Apply @media print typography rules & vector SVG fonts
+    PDF-->>Dev: Download Ros_Rendo_Resume.pdf
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+```bash
+pnpm install
+```
+
+### 2. Start Development Server
+```bash
+pnpm run dev
+```
+
+Visit `http://localhost:5173` to start creating your resume.
 
 ---
 
 ## 📄 License
-
-MIT License © 2026 ROS RENDO
+MIT License © **[Ros Rendo](https://github.com/RosRendo)**
