@@ -221,9 +221,13 @@ export const CVSettingsSchema = z.object({
     .enum(["pills", "bars", "stars", "dots", "text"])
     .default("pills"),
   skillShowIcons: z.boolean().default(true),
+  skillTextBulletStyle: z
+    .enum(["dot", "dash", "list", "none", "check", "pipe"])
+    .default("dot"),
 });
 
 export type SkillDisplayStyle = "pills" | "bars" | "stars" | "dots" | "text";
+export type SkillTextBulletStyle = "dot" | "dash" | "list" | "none" | "check" | "pipe";
 
 export const CVDataSchema = z.object({
   id: z.string().default("draft-cv"),
@@ -237,6 +241,7 @@ export const CVDataSchema = z.object({
     spacing: "normal",
     skillDisplayStyle: "pills",
     skillShowIcons: true,
+    skillTextBulletStyle: "dot",
   }),
   personalInfo: PersonalInfoSchema,
   experience: z.array(ExperienceItemSchema).default([]),

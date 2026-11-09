@@ -28,6 +28,9 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
             <img
               src={personalInfo.photoUrl}
               alt={personalInfo.fullName || "Profile"}
+              crossOrigin="anonymous"
+              loading="eager"
+              decoding="sync"
               className="w-16 h-16 rounded-xl object-cover border-2 border-slate-200 shadow-xs shrink-0"
             />
           )}
@@ -253,6 +256,7 @@ export const ModernTemplate: React.FC<TemplateProps> = ({ data }) => {
                         name={tech}
                         rating={skills.ratings?.[tech] ?? 4}
                         style={settings.skillDisplayStyle}
+                        bulletStyle={settings.skillTextBulletStyle}
                         showIcon={settings.skillShowIcons}
                         primaryColor={theme.primary}
                         primaryLightColor={theme.primaryLight}

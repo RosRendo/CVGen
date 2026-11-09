@@ -8,7 +8,7 @@ interface CamTechTemplateProps {
 }
 
 export const CamTechTemplate: React.FC<CamTechTemplateProps> = ({ data }) => {
-  const { personalInfo, education, experience, skills, additional, projects } = data;
+  const { personalInfo, education, experience, skills, additional, projects, settings } = data;
 
   // Exact Brand Colors from Ros Rendo's uploaded CV
   const SIDEBAR_BG = "#212A38"; // Slate Navy
@@ -19,7 +19,7 @@ export const CamTechTemplate: React.FC<CamTechTemplateProps> = ({ data }) => {
   const phone = personalInfo.phone || "+855 81272720";
   const email = personalInfo.email || "rousrendo@gmail.com";
   const facebook = personalInfo.facebookUrl || "Rous Rendo";
-  const linkedin = personalInfo.linkedinUrl || "https://www.linkedin.com/in/ros-rendo-ab94572b1";
+  const linkedin = personalInfo.linkedinUrl || "https://www.linkedin.com/in/rous-rendo-17b810449/";
   const github = personalInfo.githubUrl || "https://github.com/ROS-RENDO";
 
   // Technical tools list
@@ -84,6 +84,9 @@ export const CamTechTemplate: React.FC<CamTechTemplateProps> = ({ data }) => {
                 <img
                   src={personalInfo.photoUrl}
                   alt={personalInfo.fullName}
+                  crossOrigin="anonymous"
+                  loading="eager"
+                  decoding="sync"
                   className="w-full h-full object-cover"
                   style={{ objectPosition: "center 18%" }}
                 />
@@ -190,12 +193,22 @@ export const CamTechTemplate: React.FC<CamTechTemplateProps> = ({ data }) => {
             </div>
 
             <ul className="space-y-1.5 text-[10.5px] font-semibold text-slate-100 pl-2">
-              {technicalSkills.map((skill, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                  <span className="tracking-wide uppercase">{skill}</span>
-                </li>
-              ))}
+              {technicalSkills.map((skill, idx) => {
+                const bullet = settings.skillTextBulletStyle || "dot";
+                let bulletElem: React.ReactNode = <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />;
+                if (bullet === "dash") bulletElem = <span className="text-white font-bold shrink-0">–</span>;
+                else if (bullet === "check") bulletElem = <span className="text-amber-400 font-bold text-xs shrink-0">✓</span>;
+                else if (bullet === "pipe") bulletElem = <span className="text-white/40 font-bold shrink-0">|</span>;
+                else if (bullet === "list") bulletElem = <span className="w-1.5 h-1.5 rounded-xs bg-white shrink-0 inline-block" />;
+                else if (bullet === "none") bulletElem = null;
+
+                return (
+                  <li key={idx} className="flex items-center gap-2">
+                    {bulletElem}
+                    <span className="tracking-wide uppercase">{skill}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 

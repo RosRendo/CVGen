@@ -36,6 +36,9 @@ export const CreativeTemplate: React.FC<TemplateProps> = ({ data }) => {
               <img
                 src={personalInfo.photoUrl}
                 alt={personalInfo.fullName || "Creative Profile"}
+                crossOrigin="anonymous"
+                loading="eager"
+                decoding="sync"
                 className="w-16 h-16 rounded-2xl object-cover border-2 border-slate-200 shadow-sm mb-3"
               />
             ) : (

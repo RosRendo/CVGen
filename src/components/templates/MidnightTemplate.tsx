@@ -40,6 +40,9 @@ export const MidnightTemplate: React.FC<TemplateProps> = ({ data }) => {
                     <img
                       src={personalInfo.photoUrl}
                       alt={personalInfo.fullName || "Candidate"}
+                      crossOrigin="anonymous"
+                      loading="eager"
+                      decoding="sync"
                       className="w-full h-full object-cover"
                     />
                   ) : (

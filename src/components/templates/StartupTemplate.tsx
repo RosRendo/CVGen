@@ -3,6 +3,7 @@ import { CVData } from "@/lib/types/cv";
 import { COLOR_THEMES, FONT_SIZE_CONFIG, SPACING_CONFIG, FONT_CONFIG } from "@/lib/constants/themes";
 import { Mail, Phone, MapPin, Globe, ExternalLink } from "lucide-react";
 import { LinkedinIcon as Linkedin, GithubIcon as Github } from "@/components/common/Icons";
+import { SkillItemRenderer } from "@/components/common/TechIcons";
 
 interface TemplateProps {
   data: CVData;
@@ -215,16 +216,53 @@ export const StartupTemplate: React.FC<TemplateProps> = ({ data }) => {
             <h2 className="text-xs font-mono uppercase tracking-wider text-zinc-500 font-semibold mb-2">
               // Core Stack & Tools
             </h2>
-            <div className="flex flex-wrap gap-1.5">
-              {skills.technical.map((tech, idx) => (
-                <span
-                  key={idx}
-                  className="px-2 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-800 text-xs font-mono"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
+            {settings.skillDisplayStyle === "bars" || settings.skillDisplayStyle === "stars" || settings.skillDisplayStyle === "dots" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {skills.technical.map((tech) => (
+                  <SkillItemRenderer
+                    key={tech}
+                    name={tech}
+                    rating={skills.ratings?.[tech] ?? 4}
+                    style={settings.skillDisplayStyle}
+                    bulletStyle={settings.skillTextBulletStyle}
+                    showIcon={settings.skillShowIcons}
+                    primaryColor="#18181b"
+                    primaryLightColor="#f4f4f5"
+                    borderColor="#e4e4e7"
+                  />
+                ))}
+              </div>
+            ) : settings.skillDisplayStyle === "text" ? (
+              <div className="flex flex-wrap gap-2.5 text-xs font-mono">
+                {skills.technical.map((tech) => (
+                  <SkillItemRenderer
+                    key={tech}
+                    name={tech}
+                    rating={skills.ratings?.[tech] ?? 4}
+                    style="text"
+                    bulletStyle={settings.skillTextBulletStyle}
+                    showIcon={settings.skillShowIcons}
+                    primaryColor="#18181b"
+                    textColor="#27272a"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {skills.technical.map((tech) => (
+                  <SkillItemRenderer
+                    key={tech}
+                    name={tech}
+                    rating={skills.ratings?.[tech] ?? 4}
+                    style="pills"
+                    showIcon={settings.skillShowIcons}
+                    primaryColor="#18181b"
+                    primaryLightColor="#f4f4f5"
+                    borderColor="#e4e4e7"
+                  />
+                ))}
+              </div>
+            )}
           </section>
         )}
       </div>

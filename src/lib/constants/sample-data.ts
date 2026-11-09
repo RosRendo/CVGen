@@ -355,7 +355,7 @@ export const ROS_RENDO_CV: CVData = {
     phone: "+855 81272720",
     location: "Phnom Penh, Cambodia",
     photoUrl: "/images/ros-rendo.png",
-    linkedinUrl: "https://www.linkedin.com/in/ros-rendo-ab94572b1",
+    linkedinUrl: "https://www.linkedin.com/in/rous-rendo-17b810449/",
     websiteUrl: "",
     githubUrl: "https://github.com/ROS-RENDO",
     facebookUrl: "Rous Rendo",

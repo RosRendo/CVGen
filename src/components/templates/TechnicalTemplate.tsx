@@ -112,6 +112,7 @@ export const TechnicalTemplate: React.FC<TemplateProps> = ({ data }) => {
                         name={tech}
                         rating={skills.ratings?.[tech] ?? 4}
                         style={settings.skillDisplayStyle}
+                        bulletStyle={settings.skillTextBulletStyle}
                         showIcon={settings.skillShowIcons}
                         primaryColor={theme.primary}
                         primaryLightColor={theme.primaryLight}

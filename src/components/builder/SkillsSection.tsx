@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CVData, LanguageItem, SkillDisplayStyle } from "@/lib/types/cv";
+import { CVData, LanguageItem, SkillDisplayStyle, SkillTextBulletStyle } from "@/lib/types/cv";
 import { Wrench, Plus, X, Globe2, Trash2, Star, BarChart3, Tag, Type, Check, Sparkles } from "lucide-react";
 import { POPULAR_TECH_LIBRARY, getTechIcon } from "@/components/common/TechIcons";
 
@@ -27,6 +27,7 @@ export const SkillsSection: React.FC<Props> = ({ data, onChange }) => {
   const [softInput, setSoftInput] = useState("");
 
   const currentStyle: SkillDisplayStyle = settings.skillDisplayStyle || "pills";
+  const currentBullet: SkillTextBulletStyle = settings.skillTextBulletStyle || "dot";
   const showIcons: boolean = settings.skillShowIcons ?? true;
 
   const setStyle = (style: SkillDisplayStyle) => {
@@ -35,6 +36,16 @@ export const SkillsSection: React.FC<Props> = ({ data, onChange }) => {
       settings: {
         ...settings,
         skillDisplayStyle: style,
+      },
+    });
+  };
+
+  const setBulletStyle = (bullet: SkillTextBulletStyle) => {
+    onChange({
+      ...data,
+      settings: {
+        ...settings,
+        skillTextBulletStyle: bullet,
       },
     });
   };
@@ -215,6 +226,47 @@ export const SkillsSection: React.FC<Props> = ({ data, onChange }) => {
             );
           })}
         </div>
+
+        {/* Sub-selector for Plain Text Bullet Styles */}
+        {currentStyle === "text" && (
+          <div className="pt-2.5 mt-2 border-t border-zinc-200/80 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-zinc-800">
+                Plain Text Bullet / List Style:
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                Choose prefix symbol
+              </span>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+              {[
+                { id: "dot", label: "Dot", symbol: "• React" },
+                { id: "dash", label: "Dash", symbol: "– React" },
+                { id: "list", label: "Square", symbol: "▪ React" },
+                { id: "check", label: "Check", symbol: "✓ React" },
+                { id: "pipe", label: "Pipe", symbol: "| React" },
+                { id: "none", label: "None", symbol: "React" },
+              ].map((b) => {
+                const isSelected = currentBullet === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => setBulletStyle(b.id as SkillTextBulletStyle)}
+                    className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg border text-xs transition-all ${
+                      isSelected
+                        ? "bg-zinc-950 text-white border-zinc-950 font-semibold shadow-xs"
+                        : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-950"
+                    }`}
+                  >
+                    <span className="font-mono text-xs font-semibold">{b.symbol}</span>
+                    <span className="text-[9.5px] opacity-75 mt-0.5">{b.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Clickable Tech Icon Library (Instant Click to Add/Remove) */}

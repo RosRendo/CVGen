@@ -3,6 +3,7 @@ import { CVData } from "@/lib/types/cv";
 import { COLOR_THEMES, FONT_SIZE_CONFIG, SPACING_CONFIG, FONT_CONFIG } from "@/lib/constants/themes";
 import { Mail, Phone, MapPin, Globe } from "lucide-react";
 import { LinkedinIcon as Linkedin, GithubIcon as Github } from "@/components/common/Icons";
+import { SkillItemRenderer } from "@/components/common/TechIcons";
 
 interface TemplateProps {
   data: CVData;
@@ -221,9 +222,53 @@ export const ClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
             </h2>
             <div className="mt-2.5 space-y-1.5 text-slate-700">
               {skills.technical && skills.technical.length > 0 && (
-                <p>
-                  <strong className="text-slate-900">Technical Skills:</strong> {skills.technical.join(" • ")}
-                </p>
+                <div>
+                  {settings.skillDisplayStyle === "bars" || settings.skillDisplayStyle === "stars" || settings.skillDisplayStyle === "dots" ? (
+                    <div className="space-y-1">
+                      <strong className="text-slate-900 block text-xs mb-1">Technical Skills:</strong>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {skills.technical.map((tech) => (
+                          <SkillItemRenderer
+                            key={tech}
+                            name={tech}
+                            rating={skills.ratings?.[tech] ?? 4}
+                            style={settings.skillDisplayStyle}
+                            bulletStyle={settings.skillTextBulletStyle}
+                            showIcon={settings.skillShowIcons}
+                            primaryColor={theme.primary}
+                            primaryLightColor={theme.primaryLight}
+                            borderColor={theme.border}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : settings.skillDisplayStyle === "pills" ? (
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <strong className="text-slate-900 text-xs mr-1">Technical Skills:</strong>
+                      {skills.technical.map((tech) => (
+                        <SkillItemRenderer
+                          key={tech}
+                          name={tech}
+                          rating={skills.ratings?.[tech] ?? 4}
+                          style="pills"
+                          showIcon={settings.skillShowIcons}
+                          primaryColor={theme.primary}
+                          primaryLightColor={theme.primaryLight}
+                          borderColor={theme.border}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p>
+                      <strong className="text-slate-900">Technical Skills:</strong>{" "}
+                      {(() => {
+                        const b = settings.skillTextBulletStyle || "dot";
+                        const sep = b === "dash" ? " – " : b === "pipe" ? " | " : b === "check" ? " ✓ " : b === "list" ? " ▪ " : b === "none" ? ", " : " • ";
+                        return skills.technical.join(sep);
+                      })()}
+                    </p>
+                  )}
+                </div>
               )}
               {skills.soft && skills.soft.length > 0 && (
                 <p>

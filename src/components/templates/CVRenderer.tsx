@@ -135,7 +135,12 @@ export const CVRenderer: React.FC<CVRendererProps> = ({
     "executive",
   ].includes(settings.templateId);
 
-  const appliedPadding = isFullBleed ? "p-0 overflow-hidden" : spacing.pagePadding;
+  const appliedPadding =
+    settings.templateId === "infographic"
+      ? "p-4 sm:p-5"
+      : isFullBleed
+      ? "p-0 overflow-hidden"
+      : spacing.pagePadding;
 
   return (
     <div

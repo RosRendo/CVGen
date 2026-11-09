@@ -73,8 +73,9 @@ export function calculateSmartBreakPoints(
       if (b.top < idealBottom && b.bottom > idealBottom) {
         const proposedBreak = b.top - safetyMargin;
         if (proposedBreak > currentY + pageHeight * 0.4) {
-          chosenBreak = proposedBreak;
-          break;
+          if (proposedBreak < chosenBreak) {
+            chosenBreak = proposedBreak;
+          }
         }
       }
     }
@@ -110,6 +111,27 @@ export async function downloadDirectPDF(
     element.style.transform = "none";
     if (parent) parent.style.transform = "none";
 
+    // Wait for web fonts so layout typography metrics are 100% computed
+    if (typeof document !== "undefined" && (document as unknown as { fonts?: { ready: Promise<void> } }).fonts?.ready) {
+      await (document as unknown as { fonts: { ready: Promise<void> } }).fonts.ready;
+    }
+
+    // Ensure all images (avatar portrait, tech icons) are fully loaded and decoded before capture
+    const imgElements = Array.from(element.querySelectorAll("img"));
+    await Promise.all(
+      imgElements.map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve(true);
+            } else {
+              img.onload = () => resolve(true);
+              img.onerror = () => resolve(true);
+            }
+          })
+      )
+    );
+
     // Collect avoid-break boundaries before canvas capture
     const elRect = element.getBoundingClientRect();
     const avoidElements = Array.from(
@@ -119,12 +141,13 @@ export async function downloadDirectPDF(
     );
 
     const canvas = await html2canvas(element, {
-      scale: 2, // High resolution (retina 192 DPI)
+      scale: 2.5, // Crisp 240+ DPI resolution (retina print quality)
       useCORS: true,
       allowTaint: false,
       logging: false,
       backgroundColor: "#ffffff",
-      imageTimeout: 6000,
+      imageTimeout: 10000,
+      windowWidth: 1280, // Guarantee desktop 2-column layout in html2canvas iframe
       onclone: (clonedDoc) => {
         const clonedEl = clonedDoc.getElementById(elementId);
         if (clonedEl) {
@@ -133,6 +156,7 @@ export async function downloadDirectPDF(
           clonedEl.style.border = "none";
           clonedEl.style.borderRadius = "0";
           clonedEl.style.margin = "0";
+          clonedEl.style.maxHeight = "none";
           if (clonedEl.parentElement) {
             clonedEl.parentElement.style.transform = "none";
             clonedEl.parentElement.style.padding = "0";
@@ -146,6 +170,7 @@ export async function downloadDirectPDF(
       orientation: "portrait",
       unit: "mm",
       format: "a4",
+      compress: true,
     });
 
     const imgWidth = 210; // A4 width in mm
@@ -153,12 +178,16 @@ export async function downloadDirectPDF(
     const pageHeightPx = (canvas.width * 297) / 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    // Full-Bleed 1-Page Guarantee (Default): Match the live single-page preview!
-    // Fills the entire A4 canvas edge-to-edge (x=0 to 210mm, y=0 to 297mm)
-    // with 0 gaps or white margins on the left or right side.
-    if (!forceMultiPage || imgHeight <= pageHeightMm) {
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
-      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297, undefined, "FAST");
+    // Single-Page Detection:
+    // If the document height fits on 1 A4 page (or within 20% single-page tolerance, up to ~356mm)
+    // AND multi-page was NOT explicitly forced:
+    // Match the live single-page preview and compile as a single crisp A4 page!
+    const isSinglePage = !forceMultiPage && imgHeight <= pageHeightMm * 1.2;
+
+    if (isSinglePage) {
+      // Use lossless PNG for crisp, razor-sharp text and zero JPEG block artifacts
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
       const fileName = getCVFileName(data);
       pdf.save(fileName);
       return true;
@@ -203,13 +232,13 @@ export async function downloadDirectPDF(
         );
       }
 
-      const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.98);
+      const sliceData = sliceCanvas.toDataURL("image/png");
 
       if (i > 0) {
         pdf.addPage();
       }
 
-      pdf.addImage(sliceData, "JPEG", 0, 0, imgWidth, sliceHeightMm, undefined, "FAST");
+      pdf.addImage(sliceData, "PNG", 0, 0, imgWidth, sliceHeightMm, undefined, "FAST");
       startY = endY;
     }
 

@@ -83,6 +83,7 @@ export function getTechSlug(name: string): string {
   if (clean.includes("rust")) return "rust";
   if (clean.includes("cplusplus") || clean.includes("cpp") || clean.includes("c++")) return "cplusplus";
   if (clean.includes("csharp") || clean.includes("c#")) return "csharp";
+  if (clean.includes("rest") || clean.includes("api")) return "fastapi";
   if (clean.includes("supabase")) return "supabase";
   if (clean.includes("firebase")) return "firebase";
   if (clean.includes("kubernetes") || clean.includes("k8s")) return "kubernetes";
@@ -92,25 +93,16 @@ export function getTechSlug(name: string): string {
 }
 
 /**
- * Internet Icon component that loads official SVG branding directly from Simple Icons CDN
- * with automatic fallback to monogram pill if offline or not found.
+ * CDN image loader for a single icon slug.
+ * Calls onError if the CDN request fails so the parent can render a fallback.
  */
-export const TechIconImage: React.FC<{
+const TechIconCDN: React.FC<{
+  slug: string;
   name: string;
-  className?: string;
+  className: string;
   color?: string;
-}> = ({ name, className = "h-3.5 w-3.5", color }) => {
-  const [error, setError] = React.useState(false);
-  const slug = getTechSlug(name);
-
-  if (error || !slug) {
-    return (
-      <span className="font-mono text-[9px] font-bold px-1 rounded bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-white/80 shrink-0 select-none">
-        {name.slice(0, 3).toUpperCase()}
-      </span>
-    );
-  }
-
+  onError: () => void;
+}> = ({ slug, name, className, color, onError }) => {
   const cleanColor = color ? color.replace("#", "") : "";
   const src = cleanColor
     ? `https://cdn.simpleicons.org/${slug}/${cleanColor}`
@@ -122,10 +114,56 @@ export const TechIconImage: React.FC<{
       alt={name}
       crossOrigin="anonymous"
       className={`${className} object-contain inline-block shrink-0`}
-      loading="lazy"
-      onError={() => setError(true)}
+      loading="eager"
+      decoding="sync"
+      onError={onError}
     />
   );
+};
+
+/**
+ * CDN-first icon component.
+ * 1. Tries the Simple Icons CDN (always the official logo).
+ * 2. Falls back to the bundled inline SVG if the CDN is unreachable.
+ * 3. Falls back to a monogram pill as a last resort.
+ */
+export const TechIconImage: React.FC<{
+  name: string;
+  className?: string;
+  color?: string;
+}> = ({ name, className = "h-3.5 w-3.5", color }) => {
+  const [cdnFailed, setCdnFailed] = React.useState(false);
+
+  // 1. Prioritize bundled inline SVGs: 100% offline, zero network requests, instant, sharp vector
+  const bundled = getBundledIcon(name, className, color);
+  if (bundled) {
+    return <>{bundled}</>;
+  }
+
+  const slug = getTechSlug(name);
+
+  // Last resort: monogram pill
+  const monogram = (
+    <span className="font-mono text-[9px] font-bold px-1 rounded bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-white/80 shrink-0 select-none">
+      {name.slice(0, 3).toUpperCase()}
+    </span>
+  );
+
+  if (!slug) return monogram;
+
+  if (!cdnFailed) {
+    return (
+      <TechIconCDN
+        slug={slug}
+        name={name}
+        className={className}
+        color={color}
+        onError={() => setCdnFailed(true)}
+      />
+    );
+  }
+
+  return monogram;
 };
 
 /**
@@ -136,11 +174,11 @@ export function getTechBrandColor(name: string): string {
   if (n.includes("react")) return "#61DAFB";
   if (n.includes("typescript") || n === "ts") return "#3178C6";
   if (n.includes("javascript") || n === "js") return "#F7DF1E";
-  if (n.includes("next")) return "#FFFFFF";
+  if (n.includes("next")) return "#000000";
   if (n.includes("tailwind")) return "#06B6D4";
   if (n.includes("node")) return "#5FA04E";
   if (n.includes("nest")) return "#E0234E";
-  if (n.includes("express")) return "#FFFFFF";
+  if (n.includes("express")) return "#000000";
   if (n.includes("rest") || n.includes("api")) return "#FF6C37";
   if (n.includes("python")) return "#3776AB";
   if (n.includes("postgres") || n.includes("psql") || n === "sql") return "#4169E1";
@@ -151,7 +189,7 @@ export function getTechBrandColor(name: string): string {
   if (n.includes("linux") || n.includes("ubuntu")) return "#FCC624";
   if (n.includes("aws") || n.includes("ec2") || n.includes("s3")) return "#FF9900";
   if (n.includes("nginx")) return "#009639";
-  if (n.includes("pm2")) return "#9933FF";
+  if (n.includes("pm2")) return "#2B037A";
   if (n.includes("figma")) return "#F24E1E";
   if (n.includes("graphql")) return "#E10098";
   if (n.includes("git") || n.includes("github")) return "#F05032";
@@ -161,7 +199,7 @@ export function getTechBrandColor(name: string): string {
   return "#c59837";
 }
 
-export function getTechIcon(
+export function getBundledIcon(
   name: string,
   className: string = "h-3.5 w-3.5",
   color?: string
@@ -183,48 +221,54 @@ export function getTechIcon(
     );
   }
 
-  // 2. TypeScript (Official Blue Badge)
+  // 2. TypeScript (Official Simple Icons badge — exact letterforms)
   if (normalized.includes("typescript") || normalized === "ts") {
     return (
       <svg className={className} viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="3.5" fill={color || "#3178C6"} />
+        <rect width="24" height="24" rx="2" fill={color || "#3178C6"} />
         <path
-          d="M11.75 13.5H8.75V20.25H6.25V13.5H2.75V11.25H11.75V13.5ZM15.85 20.44C14.25 20.44 12.95 20.05 11.95 19.28L13.1 17.25C13.88 17.85 14.8 18.25 15.8 18.25C16.65 18.25 17.15 17.9 17.15 17.3C17.15 16.75 16.7 16.45 15.35 15.95C13.5 15.3 12.35 14.5 12.35 12.8C12.35 11.2 13.6 10.05 15.5 10.05C16.85 10.05 18.05 10.45 18.9 11.05L17.85 13C17.1 12.5 16.3 12.2 15.5 12.2C14.75 12.2 14.35 12.55 14.35 13.05C14.35 13.55 14.7 13.8 16.1 14.35C18.05 15.05 19.15 15.85 19.15 17.5C19.15 19.3 17.75 20.44 15.85 20.44Z"
-          fill="#FFFFFF"
+          fill="#ffffff"
+          d="M13.47 15.566V17c.344.192.753.338 1.228.437s.964.148 1.47.148c.494 0 .963-.05 1.407-.151.444-.101.834-.263 1.17-.487.337-.223.604-.514.8-.872.197-.357.296-.79.296-1.298 0-.365-.056-.688-.168-.969a2.413 2.413 0 0 0-.482-.756 3.473 3.473 0 0 0-.751-.597 8.167 8.167 0 0 0-.987-.494 7.47 7.47 0 0 1-.635-.305 2.332 2.332 0 0 1-.45-.308 1.168 1.168 0 0 1-.27-.355.976.976 0 0 1-.09-.421c0-.146.03-.278.092-.396a.869.869 0 0 1 .263-.308 1.263 1.263 0 0 1 .416-.199 1.924 1.924 0 0 1 .54-.07c.136 0 .282.01.44.032.157.022.316.057.476.106.161.049.314.11.46.185.147.074.28.161.4.26v-1.32a4.47 4.47 0 0 0-.952-.27 6.396 6.396 0 0 0-1.148-.092c-.49 0-.955.057-1.394.17a3.33 3.33 0 0 0-1.138.52 2.47 2.47 0 0 0-.764.886c-.186.355-.279.772-.279 1.25 0 .618.179 1.14.537 1.567.358.428.907.787 1.645 1.077l.692.277c.22.088.408.179.564.272.157.093.278.197.363.312.085.115.128.248.128.4 0 .15-.033.288-.099.413a.874.874 0 0 1-.285.32 1.4 1.4 0 0 1-.452.206 2.278 2.278 0 0 1-.594.07c-.386 0-.773-.074-1.162-.223a3.814 3.814 0 0 1-1.054-.645zm-3.558-5.21H12V9H7v1.356h2.088V17H9.912v-6.644z"
         />
       </svg>
     );
   }
 
-  // 3. JavaScript (Official Yellow Badge)
+  // 3. JavaScript (Official Simple Icons badge — exact letterforms)
   if (normalized.includes("javascript") || normalized === "js") {
     return (
       <svg className={className} viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="3.5" fill={color || "#F7DF1E"} />
+        <rect width="24" height="24" rx="2" fill={color || "#F7DF1E"} />
         <path
-          d="M6.5 17.2c0 1.2.9 2 2.2 2 1.2 0 2-.8 2-2V11H8.7v6.2c0 .3-.2.5-.5.5s-.5-.2-.5-.5V13H6.5v4.2zm6.7.7c.6.4 1.3.6 2 .6 1.1 0 1.7-.5 1.7-1.2 0-.8-.5-1.1-1.5-1.5l-.5-.2c-1.3-.5-2.2-1.2-2.2-2.4 0-1.4 1.1-2.4 2.7-2.4.8 0 1.6.2 2.2.6l-.6 1.4c-.5-.3-1-.5-1.6-.5-.7 0-1.2.4-1.2 1 0 .6.4.9 1.3 1.3l.5.2c1.4.6 2.3 1.2 2.3 2.5 0 1.5-1.1 2.5-2.9 2.5-.9 0-1.8-.3-2.5-.7l.6-1.5z"
           fill="#000000"
+          d="M22.034 18.276c-.175-1.095-.888-2.015-3.003-2.873-.736-.345-1.554-.585-1.797-1.14-.091-.33-.105-.51-.046-.705.15-.646.915-.84 1.515-.66.39.12.75.42.976.9 1.034-.676 1.034-.676 1.755-1.125-.27-.42-.404-.601-.586-.78-.63-.705-1.469-1.065-2.834-1.034l-.705.089c-.676.165-1.32.525-1.71 1.005-1.14 1.291-.811 3.541.569 4.471 1.365 1.02 3.361 1.244 3.616 2.205.24 1.17-.87 1.545-1.966 1.41-.811-.18-1.26-.586-1.755-1.336l-1.83 1.051c.21.48.45.689.81 1.109 1.74 1.756 6.09 1.666 6.871-1.004.029-.09.24-.705.074-1.65l.046.067zm-8.983-7.245h-2.248c0 1.938-.009 3.864-.009 5.805 0 1.232.063 2.363-.138 2.711-.33.689-1.18.601-1.566.48-.396-.196-.597-.466-.83-.855-.063-.105-.11-.196-.127-.196l-1.825 1.125c.305.63.75 1.172 1.324 1.517.855.51 2.004.675 3.207.405.783-.226 1.458-.691 1.811-1.411.51-.93.402-2.07.397-3.346.012-2.054 0-4.109 0-6.179l.004-.056z"
         />
       </svg>
     );
   }
 
-  // 4. Next.js
+  // 4. Next.js (Official Black Circle with White 'N' Letterform)
   if (normalized.includes("next")) {
     return (
       <svg className={className} viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="11" fill="#000000" stroke={color || "#FFFFFF"} strokeWidth="1" />
-        <path d="M15.5 16.5L9 8h-1.5v8h1.6v-5.6l6 7.6c.15-.09.3-.18.4-.28v-.22z" fill="#FFFFFF" />
-        <rect x="14" y="8" width="1.6" height="5.5" fill="#FFFFFF" />
+        <circle cx="12" cy="12" r="12" fill={color || "#000000"} />
+        <path
+          d="M14.992 17.485L9.62 10.27v5.992H8.4V7.728h1.248l5.344 7.21V7.728h1.224v9.757h-1.224z"
+          fill="#ffffff"
+        />
+        <path
+          d="M17.41 19.14a11.96 11.96 0 0 1-1.65 1.14l-4.14-5.55 1.02-.76 4.77 5.17z"
+          fill="#ffffff"
+        />
       </svg>
     );
   }
 
-  // 5. Express / Express.js
+  // 5. Express / Express.js (Official 'ex' brandmark)
   if (normalized.includes("express")) {
     return (
-      <svg className={className} viewBox="0 0 24 24" fill={color || "#FFFFFF"}>
-        <path d="M12.262 16.666h1.146l6.975-9.325H19.22zm9.778 1.441v.004l-4.334-5.706-.557.74 4.873 6.682H.945V4.173h9.505l5.026 6.7.574-.772-4.374-5.928h.003l-.719-.945H0v17.544h24zM10.917 8.705a3.8 3.8 0 0 0-1.292-1.183q-.796-.45-1.916-.45c-.746 0-1.37.14-1.906.424a3.76 3.76 0 0 0-1.31 1.12 4.9 4.9 0 0 0-.75 1.581 7.17 7.17 0 0 0 0 3.696c.148.567.402 1.101.75 1.573a3.5 3.5 0 0 0 1.31 1.066q.803.39 1.906.389 1.77 0 2.739-.868.966-.867 1.328-2.457h-1.139q-.271 1.084-.977 1.734-.704.651-1.952.65-.812 0-1.392-.342a3.1 3.1 0 0 1-.957-.869 3.5 3.5 0 0 1-.551-1.182 5 5 0 0 1-.17-1.133 9 9 0 0 0-.015-.286 4.5 4.5 0 0 1 .015-.829c.047-.418.147-.83.296-1.223A3.7 3.7 0 0 1 5.54 9.05a2.9 2.9 0 0 1 .922-.742q.541-.28 1.246-.28c.47 0 .869.093 1.23.28q.541.281.922.742.379.461.587 1.057t.225 1.246H5.625l.004.957h6.182a7.3 7.3 0 0 0-.18-1.924 4.9 4.9 0 0 0-.715-1.68z" />
+      <svg className={className} viewBox="0 0 24 24" fill={color || "#000000"}>
+        <path d="M24 18.588a1.529 1.529 0 01-1.895-.72l-3.45-4.771-.5-.667-4.003 5.444a1.466 1.466 0 01-1.802.708l5.158-6.92-4.798-6.251a1.595 1.595 0 011.9.666l3.576 4.83 3.596-4.81a1.435 1.435 0 011.788-.668L21.708 7.9l-2.522 3.283a.666.666 0 000 .994l4.804 6.412zM.002 11.576l.42-2.075c1.154-4.103 5.858-5.81 9.094-3.27 1.895 1.489 2.368 3.597 2.275 5.973H1.116C.943 16.447 4.005 19.009 7.92 17.7a4.078 4.078 0 002.582-2.876c.207-.666.548-.78 1.174-.588a5.417 5.417 0 01-2.589 3.957 6.272 6.272 0 01-7.306-.933 6.575 6.575 0 01-1.64-3.858c0-.235-.08-.455-.134-.666A88.33 88.33 0 010 11.577zm1.127-.286h9.654c-.06-3.076-2.001-5.258-4.59-5.278-2.882-.04-4.944 2.094-5.071 5.264z" />
       </svg>
     );
   }
@@ -238,11 +282,11 @@ export function getTechIcon(
     );
   }
 
-  // 7. Node.js
+  // 7. Node.js (Official "N" wordmark from Simple Icons)
   if (normalized.includes("node")) {
     return (
-      <svg className={className} viewBox="0 0 32 32" fill={color || "#5FA04E"}>
-        <path d="M16 2.5L3 10v12l13 7.5 13-7.5V10L16 2.5zm10.5 18L16 26.5 5.5 20.5V11.5L16 5.5l10.5 6v9z" />
+      <svg className={className} viewBox="0 0 24 24" fill={color || "#5FA04E"}>
+        <path d="M11.998 24c-.321 0-.641-.084-.922-.247l-2.936-1.737c-.438-.245-.224-.332-.08-.383.585-.203.703-.25 1.328-.604.065-.037.151-.023.218.017l2.256 1.339a.29.29 0 0 0 .272 0l8.795-5.076a.28.28 0 0 0 .134-.238V6.921a.28.28 0 0 0-.137-.242l-8.791-5.072c-.081-.047-.189-.047-.271 0L3.075 6.68C2.99 6.729 2.936 6.825 2.936 6.921v10.15c0 .097.054.189.139.235l2.409 1.392c1.307.654 2.108-.116 2.108-.89V7.787c0-.142.114-.253.256-.253h1.115c.139 0 .255.112.255.253v10.021c0 1.745-.95 2.745-2.604 2.745-.508 0-.909 0-2.026-.551L2.28 18.675c-.57-.329-.922-.945-.922-1.604V6.921c0-.659.353-1.275.922-1.603l8.795-5.082c.557-.315 1.296-.315 1.848 0l8.794 5.082c.57.329.924.944.924 1.603v10.15c0 .659-.354 1.273-.924 1.604l-8.794 5.078c-.28.163-.6.247-.922.247zM19.099 13.993c0-1.9-1.284-2.406-3.987-2.763-2.731-.361-3.009-.548-3.009-1.187 0-.528.235-1.233 2.258-1.233 1.807 0 2.473.389 2.747 1.607.024.115.129.199.247.199h1.141c.071 0 .138-.031.186-.081.048-.054.074-.123.064-.195-.322-2.181-1.842-2.853-4.375-2.853-2.33 0-3.666 1.052-3.666 2.682 0 1.758 1.258 2.308 3.961 2.671 2.785.368 3.035.617 3.035 1.267 0 .594-.374 1.305-2.43 1.305-1.939 0-2.675-.443-2.936-1.761-.015-.078-.079-.136-.157-.145l-1.157-.143c-.092-.011-.173.05-.192.141-.269 1.39 1.03 2.923 4.437 2.923 2.475 0 3.743-1.047 3.743-2.775z" />
       </svg>
     );
   }
@@ -272,11 +316,15 @@ export function getTechIcon(
     );
   }
 
-  // 10. PostgreSQL (Official Elephant Mark)
+  // 10. PostgreSQL (Official Simple Icons — Slonik elephant, clean 24x24)
   if (normalized.includes("postgres") || normalized.includes("psql")) {
     return (
       <svg className={className} viewBox="0 0 24 24" fill={color || "#4169E1"}>
-        <path d="M11.996 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.996 0zm5.66 6.79c.47.01.91.22 1.22.58.62.74.56 1.84-.13 2.51l-.22.21c.21.64.29 1.32.22 2.01-.15 1.48-.97 2.8-2.22 3.59-.28.18-.58.32-.89.44-.04.22-.11.43-.2.64l.97.97c.42.42.42 1.11 0 1.53-.42.42-1.11.42-1.53 0l-.82-.82c-.67.33-1.42.52-2.22.53-.28 0-.55-.03-.82-.07l-.46.77c-.32.53-.99.73-1.53.44-.54-.29-.75-.95-.47-1.49l.48-.82c-.79-.37-1.46-.94-1.93-1.66-.99-1.51-1.1-3.41-.31-5.02.16-.33.36-.64.6-.92l-.51-.51a1.08 1.08 0 0 1 0-1.53c.42-.42 1.11-.42 1.53 0l.47.47c.72-.45 1.54-.73 2.41-.81.33-.03.66-.03.99 0 .25-.33.64-.54 1.08-.55zm-.21 1.79c-.24 0-.44.15-.5.37-.17.65-.54 1.22-1.04 1.64-.4.34-.89.56-1.41.65-.21.04-.37.21-.38.43-.01.21.13.41.34.47.78.22 1.62.16 2.37-.17.61-.27 1.13-.71 1.5-1.27.17-.26.17-.6-.02-.85a.99.99 0 0 0-.86-.27z" />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M17.128 0a10.134 10.134 0 0 0-2.755.403l-.063.02A10.922 10.922 0 0 0 12.6.258C11.422.238 10.41.524 9.594 1 8.79.721 7.122.24 5.364.26 4.236.275 3.02.521 2.102 1.329.63 2.606-.1 4.63.013 7.28c.03.675.242 1.398.49 2.144.249.748.567 1.52.753 2.1a.37.37 0 0 0 .02.056c.213.511.455.894.746 1.141.158.136.337.228.537.257.197.028.405-.01.618-.1a.372.372 0 0 0 .157-.133c.345.329.735.502 1.127.603.64.163 1.29.135 1.8.07.195-.025.37-.057.527-.09-.03.21-.056.44-.082.68-.07.637-.13 1.279-.13 1.75 0 .065.005.129.012.192-.023.17-.033.345-.033.52 0 1.3.42 2.401 1.258 3.272.838.87 2.047 1.455 3.566 1.743C12 23.878 13.22 24 14.418 24c.966 0 1.845-.085 2.563-.224 1.185-.23 2.136-.643 2.786-1.273.65-.63.985-1.455.985-2.44 0-.062-.002-.131-.005-.205.146-.047.282-.1.407-.16.68-.332 1.102-.862 1.102-1.574v-.012c-.007-.622-.32-1.102-.782-1.414l.013-.013c.42-.498.94-1.361.94-2.885 0-.868-.23-1.59-.568-2.207.249-.405.42-.865.52-1.388.17-.9.096-1.843-.023-2.728l-.024-.165-.05-.316a9.167 9.167 0 0 0-.639-2.195C20.738 2.961 19.498.471 17.128 0zM13.012 23.14c-1.072 0-2.188-.11-3.14-.33-1.337-.317-2.388-.847-3.095-1.59-.707-.742-1.052-1.705-1.052-2.885 0-.182.013-.37.038-.558.282.126.618.238 1.014.33a9.709 9.709 0 0 0 2.088.218c.428 0 .86-.03 1.278-.085.1.244.242.47.43.665.586.614 1.473.937 2.63.937.566 0 1.19-.069 1.814-.22.624-.152 1.218-.417 1.715-.815.028.188.043.372.043.549 0 1.07-.315 1.84-.981 2.33-.688.504-1.74.769-3.182.769l.4.685zm5.027-10.502c.077.391.117.802.117 1.233 0 1.524-.524 2.07-.744 2.228-.375-.11-.8-.195-1.258-.25a19.924 19.924 0 0 0-.612-.06 1.726 1.726 0 0 0-.112-.355 2.29 2.29 0 0 0-.305-.516l-.012-.018c-.106-.146-.224-.286-.353-.42.3-.046.598-.102.878-.17.994-.243 1.802-.645 2.401-1.672zm-9.471 1.993c.37-.067.737-.113 1.096-.133-.113.264-.176.566-.176.892 0 .395.082.746.233 1.057a4.2 4.2 0 0 0-.535-.033c-1.287 0-2.33-.452-3.07-1.172-.123-.119-.235-.244-.336-.375.277.04.56.08.846.108a19.37 19.37 0 0 0 1.942.056zm4.25 2.858c-.638 0-1.102-.16-1.414-.49-.312-.33-.452-.773-.452-1.37 0-.64.172-1.114.504-1.428.33-.312.84-.48 1.542-.48.665 0 1.228.147 1.573.432.346.284.517.74.517 1.476 0 .647-.19 1.11-.558 1.4-.368.287-.888.46-1.713.46zm7.25-10.818c.049.397.072.814.055 1.224-.03.73-.17 1.408-.48 1.924a2.818 2.818 0 0 0-.278-.453c-.225-.303-.516-.563-.855-.794.038-.086.073-.173.104-.261.244-.704.293-1.312.277-1.782a4.2 4.2 0 0 0-.013-.197c.071.067.142.14.21.218.308.343.566.75.753 1.185l.228-.064zM7.044 6.5c.095-.07.192-.137.293-.2 1.003-.625 2.286-.905 3.65-.802.247.019.49.05.726.093a3.555 3.555 0 0 0-.6.63c-.24.33-.41.714-.49 1.14a5.655 5.655 0 0 0-.8-.22 5.19 5.19 0 0 0-1.555-.07c-.46.05-.914.17-1.333.37a3.57 3.57 0 0 1 .109-1.14zm-1.638 7.072c-.363-.48-.618-.985-.748-1.411-.25-.82-.297-1.57-.195-2.237.072-.482.236-.914.476-1.258.238-.343.556-.613.952-.793a3.966 3.966 0 0 1 1.624-.318c.634 0 1.287.136 1.886.397a4.9 4.9 0 0 1 1.517 1.065 4.513 4.513 0 0 1 .98 1.72c.197.657.237 1.396.085 2.153-.106.52-.3.964-.562 1.33-.516-.19-1.11-.362-1.771-.498-.656-.135-1.24-.198-1.713-.198-.627 0-1.19.095-1.667.274a4.3 4.3 0 0 1-.865-.225zm12.04-2.012c.071.455.065.925-.022 1.374-.093.481-.277.887-.538 1.19a3.63 3.63 0 0 0-.993-1.054 5.712 5.712 0 0 0-1.49-.737c.065-.293.082-.6.047-.915a3.983 3.983 0 0 0-.225-.893c.42.213.787.46 1.096.735.496.439.84.933 1.049 1.46l.076-.16zm-7.59-6.9c.168-.134.35-.25.546-.345.546-.264 1.141-.363 1.72-.29.286.036.548.12.774.248a3.14 3.14 0 0 1 .555.398 3.03 3.03 0 0 1 .605.903c.148.339.237.72.237 1.14v.015c0 .307-.047.6-.141.876a3.52 3.52 0 0 1-.395.787c-.376-.26-.813-.48-1.303-.643a7.59 7.59 0 0 0-1.698-.326 7.137 7.137 0 0 0-1.78.07 5.33 5.33 0 0 0-.724.19 3.517 3.517 0 0 1 .05-1.027c.095-.48.283-.9.555-1.228.1-.12.21-.23.333-.325l-.334-.643z"
+        />
       </svg>
     );
   }
@@ -344,11 +392,11 @@ export function getTechIcon(
     );
   }
 
-  // 17. PM2
+  // 17. PM2 (Official Simple Icons stacked-trapezoids mark)
   if (normalized.includes("pm2")) {
     return (
-      <svg className={className} viewBox="0 0 24 24" fill={color || "#9933FF"}>
-        <path d="M2 5h10a5 5 0 015 5 5 5 0 01-5 5H6v4H2V5zm4 6h6a1 1 0 001-1 1 1 0 00-1-1H6v2zm13 8h3v-8h-3v8z" />
+      <svg className={className} viewBox="0 0 24 24" fill={color || "#2B037A"}>
+        <path d="M10.43 3.223c-.83 1.386-.906 1.499-1.21 2.223h4.56c-.304-.724-.38-.837-1.21-2.223-.701-1.171-1.265-1.121-2.14 0zM5.385 5.539c-.93 1.552-1.268 2.378-1.748 3.511h13.726c-.48-1.133-.818-1.959-1.748-3.511-.837-1.396-1.428-1.537-2.525-1.539H7.91c-1.097.002-1.688.143-2.525 1.539zM2.083 10.74c-.604 1.424-.962 2.658-1.385 4.175h22.604c-.423-1.517-.781-2.751-1.385-4.175-.487-1.148-1.162-1.54-2.42-1.54H4.503c-1.258 0-1.933.392-2.42 1.54zM0 16.993c.394 1.43.754 2.894 1.155 4.314.39 1.383 1.096 1.47 2.457 1.47h15.776c1.361 0 2.067-.087 2.457-1.47.401-1.42.761-2.884 1.155-4.314z" />
       </svg>
     );
   }
@@ -362,11 +410,11 @@ export function getTechIcon(
     );
   }
 
-  // 19. GraphQL
+  // 19. GraphQL (Official Simple Icons — stylised hexagonal star)
   if (normalized.includes("graphql")) {
     return (
       <svg className={className} viewBox="0 0 24 24" fill={color || "#E10098"}>
-        <path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2zm0 2.31L5.34 8.15v7.7L12 19.69l6.66-3.85v-7.7L12 4.31zM12 7a2 2 0 110 4 2 2 0 010-4zm-4.33 7.5a2 2 0 110 4 2 2 0 010-4zm8.66 0a2 2 0 110 4 2 2 0 010-4z" />
+        <path d="M12.001 2.085L2.001 7.671v11.172l10 5.586 10-5.586V7.671l-10-5.586zM3.501 8.521l8.5-4.75 8.5 4.75v9.5l-8.5 4.75-8.5-4.75v-9.5zm8.5 1.73a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5zM6.751 7.771a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM6.751 13.271a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM12.001 16.271a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM12.001 4.771a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
       </svg>
     );
   }
@@ -389,23 +437,45 @@ export function getTechIcon(
     );
   }
 
-  // 22. Figma
+  // 22. Figma (Official Simple Icons — 24x24 interlocking circles/squares mark)
   if (normalized.includes("figma")) {
     return (
-      <svg className={className} viewBox="0 0 38 57" fill={brand}>
-        <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0zM0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0zM0 28.5A9.5 9.5 0 0 1 9.5 19H19v19H9.5A9.5 9.5 0 0 1 0 28.5zM0 9.5A9.5 9.5 0 0 1 9.5 0H19v19H9.5A9.5 9.5 0 0 1 0 9.5zM19 0h9.5a9.5 9.5 0 1 1 0 19H19V0z" />
+      <svg className={className} viewBox="0 0 24 24" fill={color || "#F24E1E"}>
+        <path d="M12 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0zM4 20a4 4 0 0 1 4-4h4v4a4 4 0 1 1-8 0zM12 0v8h4a4 4 0 1 0 0-8h-4zM4 4a4 4 0 0 0 4 4h4V0H8a4 4 0 0 0-4 4zM4 12a4 4 0 0 0 4 4h4V8H8a4 4 0 0 0-4 4z" />
       </svg>
     );
   }
 
-  // 23. Dynamic Internet CDN Resolver (Simple Icons) for ANY other technology
-  return <TechIconImage name={name} className={className} color={color || getTechBrandColor(name)} />;
+  // 23. Unknown — return null so the caller (TechIconImage) can try CDN or show monogram
+  return null;
+}
+
+/**
+ * CDN-first icon resolver.
+ * Always tries the Simple Icons CDN first (official, always up-to-date).
+ * Falls back to the bundled inline SVG if CDN is unreachable.
+ * Falls back to a monogram pill as a last resort.
+ * Use this everywhere in templates and UI components.
+ */
+export function getTechIcon(
+  name: string,
+  className: string = "h-3.5 w-3.5",
+  color?: string
+): React.ReactNode {
+  return (
+    <TechIconImage
+      name={name}
+      className={className}
+      color={color || getTechBrandColor(name)}
+    />
+  );
 }
 
 interface SkillItemRendererProps {
   name: string;
   rating?: number; // 1-5 or 20-100
   style?: "pills" | "bars" | "stars" | "dots" | "text";
+  bulletStyle?: "dot" | "dash" | "list" | "none" | "check" | "pipe";
   showIcon?: boolean;
   primaryColor?: string;
   primaryLightColor?: string;
@@ -417,6 +487,7 @@ export const SkillItemRenderer: React.FC<SkillItemRendererProps> = ({
   name,
   rating = 4, // Default 4 stars or 80%
   style = "pills",
+  bulletStyle = "dot",
   showIcon = true,
   primaryColor = "#1e3a8a",
   primaryLightColor = "#eff6ff",
@@ -525,11 +596,19 @@ export const SkillItemRenderer: React.FC<SkillItemRendererProps> = ({
 
   // 4. Clean Minimalist Text
   if (style === "text") {
+    let bulletSymbol: React.ReactNode = null;
+    if (bulletStyle === "dot") bulletSymbol = <span className="opacity-60">•</span>;
+    else if (bulletStyle === "dash") bulletSymbol = <span className="opacity-60">–</span>;
+    else if (bulletStyle === "check") bulletSymbol = <span className="text-emerald-600 font-bold text-[11px]">✓</span>;
+    else if (bulletStyle === "pipe") bulletSymbol = <span className="opacity-40">|</span>;
+    else if (bulletStyle === "list") bulletSymbol = <span className="w-1.5 h-1.5 rounded-xs bg-current inline-block opacity-75" />;
+
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs ${textClass}`}
+        className={`inline-flex items-center gap-1.5 text-xs ${textClass}`}
         style={{ color: textColor }}
       >
+        {bulletSymbol}
         {showIcon && getTechIcon(name, "h-3.5 w-3.5", textColor)}
         <span>{name}</span>
       </span>

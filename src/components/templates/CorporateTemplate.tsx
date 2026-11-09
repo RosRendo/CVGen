@@ -87,6 +87,9 @@ export const CorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
               <img
                 src={personalInfo.photoUrl}
                 alt={personalInfo.fullName || "Corporate Photo"}
+                crossOrigin="anonymous"
+                loading="eager"
+                decoding="sync"
                 className="w-24 h-28 sm:w-28 sm:h-32 object-cover rounded-lg border-2 border-slate-200 shadow-sm"
               />
             ) : (
@@ -191,6 +194,7 @@ export const CorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
                         name={tech}
                         rating={skills.ratings?.[tech] ?? 4}
                         style={settings.skillDisplayStyle}
+                        bulletStyle={settings.skillTextBulletStyle}
                         showIcon={settings.skillShowIcons}
                         primaryColor={theme.primary}
                         primaryLightColor={theme.primaryLight}

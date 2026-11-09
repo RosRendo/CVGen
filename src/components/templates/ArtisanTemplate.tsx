@@ -27,6 +27,9 @@ export const ArtisanTemplate: React.FC<TemplateProps> = ({ data }) => {
               <img
                 src={personalInfo.photoUrl}
                 alt={personalInfo.fullName || "Artisan"}
+                crossOrigin="anonymous"
+                loading="eager"
+                decoding="sync"
                 className="w-20 h-20 rounded-full object-cover border-2 shadow-xs"
                 style={{ borderColor: theme.primary }}
               />

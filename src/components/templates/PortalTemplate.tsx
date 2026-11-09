@@ -61,6 +61,9 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                   <img
                     src={personalInfo.photoUrl}
                     alt={personalInfo.fullName || "Profile"}
+                    crossOrigin="anonymous"
+                    loading="eager"
+                    decoding="sync"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -138,51 +141,144 @@ export const PortalTemplate: React.FC<TemplateProps> = ({ data }) => {
                   <span>Skills & Capabilities</span>
                 </div>
 
-                {/* Top Core Competencies with Arched Progress Sliders */}
-                <div className="space-y-1.5 pt-0.5">
-                  {skills.technical.slice(0, 5).map((tech) => {
-                    const rawRating = skills.ratings?.[tech];
-                    const rating = typeof rawRating === "number" ? rawRating : 4;
-                    const pct = rating <= 5 ? rating * 20 : Math.min(100, Math.max(20, rating));
-
-                    return (
-                      <div key={tech} className="space-y-0.5">
-                        <div className="flex justify-between items-center text-[10px]">
-                          <span className="font-semibold text-zinc-200 flex items-center gap-1">
-                            {settings.skillShowIcons && (
-                              <span className="shrink-0">
-                                {getTechIcon(tech, "w-2.5 h-2.5")}
-                              </span>
-                            )}
-                            {tech}
+                {settings.skillDisplayStyle === "stars" ? (
+                  /* 5-Star Rating Stack */
+                  <div className="space-y-1 pt-0.5">
+                    {skills.technical.map((tech) => {
+                      const rawRating = skills.ratings?.[tech];
+                      const rating = typeof rawRating === "number" ? rawRating : 4;
+                      const count = rating > 5 ? Math.round(rating / 20) : rating;
+                      return (
+                        <div key={tech} className="flex items-center justify-between text-xs py-0.5">
+                          <span className="flex items-center gap-1.5 font-medium text-zinc-200 text-[10.5px]">
+                            {settings.skillShowIcons && getTechIcon(tech, "w-2.5 h-2.5")}
+                            <span>{tech}</span>
                           </span>
-                          <span className="text-[9px] font-mono text-zinc-400 font-bold">{pct}%</span>
+                          <div className="flex items-center gap-0.5 text-xs select-none">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span key={star} className={star <= count ? "text-amber-400" : "text-white/20"}>
+                                ★
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        {/* High-Contrast Monochrome Arched Meter Track */}
-                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
-                          <div
-                            className="h-full bg-gradient-to-r from-zinc-300 to-white rounded-full transition-all"
-                            style={{ width: `${pct}%` }}
-                          />
+                      );
+                    })}
+                  </div>
+                ) : settings.skillDisplayStyle === "dots" ? (
+                  /* Dot Levels Stack */
+                  <div className="space-y-1 pt-0.5">
+                    {skills.technical.map((tech) => {
+                      const rawRating = skills.ratings?.[tech];
+                      const rating = typeof rawRating === "number" ? rawRating : 4;
+                      const count = rating > 5 ? Math.round(rating / 20) : rating;
+                      return (
+                        <div key={tech} className="flex items-center justify-between text-xs py-0.5">
+                          <span className="flex items-center gap-1.5 font-medium text-zinc-200 text-[10.5px]">
+                            {settings.skillShowIcons && getTechIcon(tech, "w-2.5 h-2.5")}
+                            <span>{tech}</span>
+                          </span>
+                          <div className="flex items-center gap-1 select-none">
+                            {[1, 2, 3, 4, 5].map((dot) => (
+                              <span
+                                key={dot}
+                                className={`w-1.5 h-1.5 rounded-full inline-block ${dot <= count ? "bg-white" : "bg-white/20"}`}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Additional Technical Skills Tags */}
-                {skills.technical.length > 5 && (
+                      );
+                    })}
+                  </div>
+                ) : settings.skillDisplayStyle === "pills" ? (
+                  /* Pill Badges */
                   <div className="flex flex-wrap gap-1 pt-0.5">
-                    {skills.technical.slice(5).map((tech) => (
+                    {skills.technical.map((tech) => (
                       <span
                         key={tech}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/10 text-zinc-200 text-[9px] font-mono border border-white/10"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/10 text-zinc-100 text-[9.5px] font-mono border border-white/15"
                       >
                         {settings.skillShowIcons && getTechIcon(tech, "w-2 h-2")}
                         <span>{tech}</span>
                       </span>
                     ))}
                   </div>
+                ) : settings.skillDisplayStyle === "text" ? (
+                  /* Plain Text as List (Stacked on top of each other, not visual) */
+                  <ul className="space-y-1 text-xs pt-0.5">
+                    {skills.technical.map((tech) => {
+                      const bullet = settings.skillTextBulletStyle || "dot";
+                      let bulletElem: React.ReactNode = null;
+                      if (bullet === "dot") bulletElem = <span className="opacity-60">•</span>;
+                      else if (bullet === "dash") bulletElem = <span className="opacity-60">–</span>;
+                      else if (bullet === "check") bulletElem = <span className="text-emerald-400 font-bold text-xs">✓</span>;
+                      else if (bullet === "pipe") bulletElem = <span className="opacity-40">|</span>;
+                      else if (bullet === "list") bulletElem = <span className="w-1.5 h-1.5 rounded-xs bg-zinc-400 inline-block opacity-75" />;
+
+                      return (
+                        <li key={tech} className="flex items-center gap-1.5 text-zinc-200">
+                          {bulletElem}
+                          {settings.skillShowIcons && (
+                            <span className="shrink-0">{getTechIcon(tech, "w-2.5 h-2.5")}</span>
+                          )}
+                          <span className="font-medium text-zinc-100 text-[10.5px]">{tech}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <>
+                    {/* Core Competencies with Arched Progress Sliders (Stacked) */}
+                    <div className="space-y-1.5 pt-0.5">
+                      {skills.technical
+                        .slice(0, skills.technical.length <= 8 ? skills.technical.length : 6)
+                        .map((tech) => {
+                          const rawRating = skills.ratings?.[tech];
+                          const rating = typeof rawRating === "number" ? rawRating : 4;
+                          const pct = rating <= 5 ? rating * 20 : Math.min(100, Math.max(20, rating));
+
+                          return (
+                            <div key={tech} className="space-y-0.5">
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="font-semibold text-zinc-200 flex items-center gap-1">
+                                  {settings.skillShowIcons && (
+                                    <span className="shrink-0">
+                                      {getTechIcon(tech, "w-2.5 h-2.5")}
+                                    </span>
+                                  )}
+                                  {tech}
+                                </span>
+                                <span className="text-[9px] font-mono text-zinc-400 font-bold">{pct}%</span>
+                              </div>
+                              {/* High-Contrast Monochrome Arched Meter Track */}
+                              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/5">
+                                <div
+                                  className="h-full bg-gradient-to-r from-zinc-300 to-white rounded-full transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    {/* Additional Technical Skills Tags (if more than 8 total) */}
+                    {skills.technical.length > (skills.technical.length <= 8 ? skills.technical.length : 6) && (
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {skills.technical
+                          .slice(skills.technical.length <= 8 ? skills.technical.length : 6)
+                          .map((tech) => (
+                            <span
+                              key={tech}
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white/10 text-zinc-200 text-[9px] font-mono border border-white/10"
+                            >
+                              {settings.skillShowIcons && getTechIcon(tech, "w-2 h-2")}
+                              <span>{tech}</span>
+                            </span>
+                          ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
