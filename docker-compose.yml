@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cvgen_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cvgen
+    ports:
+      - "5432:5432"
+    volumes:
+      - cvgen_postgres_data:/var/lib/postgresql/data
+    networks:
+      - cvgen_network
+
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: cvgen_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/cvgen?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: dev-secret-cvgen-super-secure-key-2026
+    depends_on:
+      - postgres
+    networks:
+      - cvgen_network
+
+volumes:
+  cvgen_postgres_data:
+    driver: local
+
+networks:
+  cvgen_network:
+    driver: bridge
